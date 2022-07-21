@@ -1,0 +1,122 @@
+$version 1.0
+
+attr active = Clock::TimerClock;
+attr callStackMonitor_Show = false;
+attr codeColSelect = false;
+attr codeFirstPos = <0,0>;
+attr codeInspector = Clock::TimerClock.Init;
+attr codeSelEnd = <23,0>;
+attr codeSelStart = <23,0>;
+attr connectInspectors = false;
+attr debug_TrackUpdates = false;
+attr extractDoc_ClassOverview = true;
+attr extractDoc_DeleteOldFiles = false;
+attr extractDoc_Destination = ./HtmlDoc;
+attr extractDoc_IgnoreAccessors = true;
+attr extractDoc_IgnoreMembers = true;
+attr extractDoc_Navigation = true;
+attr extractDoc_Profiles = false;
+attr extractDoc_Title = Documentation;
+attr extractDoc_Variants = false;
+attr generateClut_ReservedColors = 0;
+attr heapMonitor_Show = false;
+attr language = Default;
+attr profile = Profile;
+attr profilerMonitor_Show = false;
+attr search_CaseSensitive = false;
+attr search_IgnoreDescription = false;
+attr search_IgnoreMosaic = false;
+attr search_LimitToComposer = true;
+attr search_WholeWords = false;
+attr search_WildCards = false;
+
+view Project
+{
+  attr aspectRatio = 1.0;
+  attr enableGrid = true;
+  attr enableWireMode = false;
+  attr grid = 10;
+  attr scrollTo = <-7,-7>;
+  attr zoom = 1.0;
+}
+
+view unit Clock
+{
+  attr enableWireMode = false;
+  attr scrollTo = <-165,40>;
+  attr zoom = 0.75;
+}
+
+view unit Application
+{
+  attr enableWireMode = false;
+  attr scrollTo = <-7,-7>;
+  attr zoom = 1.0;
+}
+
+view unit Resources
+{
+  attr enableWireMode = false;
+  attr scrollTo = <-7,424>;
+  attr zoom = 1.0;
+}
+
+view class Clock::FunctionalitiesScreen
+{
+  attr codeColSelect = false;
+  attr codeFirstPos = <0,0>;
+  attr codeInspector = OnChronButton;
+  attr codeSelEnd = <49,0>;
+  attr codeSelStart = <49,0>;
+  attr enableWireMode = false;
+  attr scrollTo = <-383,93>;
+  attr zoom = 0.5;
+}
+
+view class Clock::TimerClock
+{
+  attr codeColSelect = false;
+  attr codeFirstPos = <0,0>;
+  attr codeInspector = Init;
+  attr codeSelEnd = <23,0>;
+  attr codeSelStart = <23,0>;
+  attr enableWireMode = false;
+  attr scrollTo = <-26,-74>;
+  attr zoom = 0.5;
+}
+
+view class Clock::ChronometerScreen
+{
+  attr codeColSelect = false;
+  attr codeFirstPos = <0,0>;
+  attr codeInspector = OnPauseButton;
+  attr codeSelEnd = <13,9>;
+  attr codeSelStart = <13,9>;
+  attr enableWireMode = false;
+  attr scrollTo = <-367,-74>;
+  attr zoom = 0.5;
+}
+
+view class Clock::TimerScreen
+{
+  attr codeColSelect = false;
+  attr codeFirstPos = <0,0>;
+  attr codeInspector = ChangeButtons;
+  attr codeSelEnd = <0,4>;
+  attr codeSelStart = <0,4>;
+  attr enableWireMode = false;
+  attr scrollTo = <-194,124>;
+  attr zoom = 0.5;
+}
+
+view class Clock::TimePicker
+{
+  attr codeColSelect = false;
+  attr codeFirstPos = <0,6>;
+  attr codeInspector = OnSetHour;
+  attr codeSelEnd = <2,22>;
+  attr codeSelStart = <2,22>;
+  attr enableWireMode = false;
+  attr scrollTo = <-7,16>;
+  attr zoom = 1.0;
+}
