@@ -156,16 +156,14 @@ class ClockScreen : Core::Group
     preset Enabled = true;
   }
 
-  $rect <0,610,190,650>
-  object Core::Time Time;
-
   $rect <210,500,410,540>
   slot UpdateTime
   {
-    var Core::Time currentTime = Time.CurrentTime;
+    var Core::Time currentTime =  Clock::Time.CurrentTime;
 
     Second.String=string(currentTime.Second/10)+ string(currentTime.Second%10);
-    Hour.String=string(currentTime.Hour/10)+string(currentTime.Hour%10)+":"+string(currentTime.Minute/10)+string(currentTime.Minute%10);
+    Hour.String=string(currentTime.Hour/10)+string(currentTime.Hour%10);
+    Hour.String=string(currentTime.Minute/10)+string(currentTime.Minute%10);
     DayMonth.String=currentTime.getDayOfWeekName( currentTime.DayOfWeek, false ) + "\n" + currentTime.getMonthName( currentTime.Month, false ) + " " + string(currentTime.Day, 2);
     Year.String = string(currentTime.Year);
 
@@ -177,17 +175,33 @@ class ClockScreen : Core::Group
   $rect <20,20,160,60>
   object Views::Text Hour
   {
-    preset Bounds = <26,108,320,403>;
-    preset String = "05:30";
+    preset Bounds = <14,108,154,403>;
+    preset String = "00";
     preset Font = Clock::TimeFont;
   }
 
   $rect <20,20,160,60>
   object Views::Text Second
   {
-    preset Bounds = <295,255,384,335>;
-    preset String = "Text";
+    preset Bounds = <295,108,384,403>;
+    preset String = "00";
     preset Font = Clock::SecondFont;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Dot
+  {
+    preset Bounds = <154,107,172,402>;
+    preset String = "05:30";
+    preset Font = Clock::TimeFont;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Minute
+  {
+    preset Bounds = <172,108,312,403>;
+    preset String = "00";
+    preset Font = Clock::TimeFont;
   }
 
   $rect <20,20,160,60>
@@ -584,9 +598,6 @@ class FunctionalitiesScreen : Core::Group
     preset Enabled = true;
   }
 
-  $rect <0,630,190,670>
-  object Core::Time Time;
-
   $rect <210,590,410,630>
   slot WipeUpSlot
   {
@@ -596,7 +607,7 @@ class FunctionalitiesScreen : Core::Group
   $rect <210,500,410,540>
   slot UpdateTime
   {
-    var Core::Time currentTime = Time.CurrentTime;
+    var Core::Time currentTime = Clock::Time.CurrentTime;
     Hour.String=string(currentTime.Hour/10)+string(currentTime.Hour%10)+":"+string(currentTime.Minute/10)+string(currentTime.Minute%10);
   }
 
@@ -673,6 +684,7 @@ class FunctionalitiesScreen : Core::Group
   object WidgetSet::PushButton CalendarButton
   {
     preset Bounds = <394,125,494,225>;
+    preset OnEnter = OnCalButton;
     preset Label = "Caption";
     preset Appearance = CalendarButtonConfig;
   }
@@ -690,6 +702,7 @@ class FunctionalitiesScreen : Core::Group
   object WidgetSet::PushButton AlarmButton
   {
     preset Bounds = <394,277,494,377>;
+    preset OnPress = OnAlarmButton;
     preset Label = "Caption";
     preset Appearance = AlarmButtonConfig;
   }
@@ -776,6 +789,18 @@ class FunctionalitiesScreen : Core::Group
   slot OnChronButton
   {
     Owner.SwitchToDialog(new Clock::ChronometerScreen, Effects::FadeInOutCentered, null, null, null, null, null, null, null, null, false );
+  }
+
+  $rect <419,670,619,710>
+  slot OnAlarmButton
+  {
+    Owner.SwitchToDialog(new Clock::AlarmScreen, Effects::FadeInOutCentered, null, null, null, null, null, null, null, null, false );
+  }
+
+  $rect <419,710,619,750>
+  slot OnCalButton
+  {
+    Owner.SwitchToDialog(new Clock::CalendarScreen, Effects::FadeInOutCentered, null, null, null, null, null, null, null, null, false );
   }
 }
 
@@ -1195,7 +1220,7 @@ class TimerClock : Templates::RotaryKnob
   }
 
   $rect <480,390,680,430>
-  inherited property Bounds = <0,0,400,448>;
+  inherited property Bounds = <0,0,379,379>;
 
   $rect <880,240,1080,280>
   inherited onget Enabled
@@ -1209,6 +1234,7 @@ class TimerClock : Templates::RotaryKnob
     pure Enabled = value;
 
     Timer.Enabled=value;
+    if(value==true) TimePicker.Cover.Enabled=true;
   }
 
   $rect <880,160,1080,200>
@@ -1228,7 +1254,7 @@ class TimerClock : Templates::RotaryKnob
   $rect <20,20,160,60>
   object Views::StrokePath StrokePath
   {
-    preset Bounds = <10,10,390,390>;
+    preset Bounds = <0,0,380,380>;
     preset Color = #FFFFFF88;
     preset Offset = <190,190>;
     preset Width = 8;
@@ -1268,7 +1294,7 @@ class TimerClock : Templates::RotaryKnob
   $rect <20,20,160,60>
   object Views::StrokePath TimePassing
   {
-    preset Bounds = <10,10,390,390>;
+    preset Bounds = <0,0,380,380>;
     preset ColorBL = #4B3FFFFF;
     preset ColorBR = #41F5FFFF;
     preset ColorTR = #19FF72FF;
@@ -1299,7 +1325,7 @@ class TimerClock : Templates::RotaryKnob
     {
       Enabled=false;
       Running=false;
-      ResetTime();
+      ResetTime(true);
     }
     else
     {
@@ -1384,7 +1410,7 @@ class TimerClock : Templates::RotaryKnob
   $rect <20,20,160,60>
   object Clock::TimePicker TimePicker
   {
-    preset Bounds = <76,102,324,299>;
+    preset Bounds = <66,92,314,289>;
     preset OnChange = UpdateMaxValue;
   }
 
@@ -1454,7 +1480,7 @@ class TimerClock : Templates::RotaryKnob
   }
 
   $rect <480,270,680,310>
-  method void ResetTime()
+  method void ResetTime( arg bool TimeOut )
   {
     TimePicker.Hour=0;
     TimePicker.Minute=0;
@@ -1462,6 +1488,11 @@ class TimerClock : Templates::RotaryKnob
     TimerPath.EndAngle=270;
     IncValue=0.0;
     StartValue=0.0;
+
+    Enabled=false;
+    Running=false;
+
+    TimePicker.End(TimeOut);
   }
 }
 
@@ -1631,9 +1662,8 @@ class TimePicker : Templates::PickerControl
       return;
 
     var int32 itemCenter = ListSecond.GetItemAtPosition( SecondCenter );
-    // Configure the item view ...
     itemView.String    = string( itemNo, 2 );
-    itemView.Font      = Clock::SecondFont;
+    itemView.Font      = ( itemCenter == itemNo )?  Clock::SecondFont : Clock::SmallerSecondFont;
     itemView.Color     = ( itemCenter == itemNo )? #FFFFFFFF : #FFFFFF80;
     itemView.Alignment = Views::TextAlignment[ AlignHorzCenter, AlignVertCenter ];
     itemView.ScrollOffset = <0,-2>;                  
@@ -1659,9 +1689,8 @@ class TimePicker : Templates::PickerControl
       return;
 
     var int32 itemCenter = ListMinute.GetItemAtPosition( MinuteCenter );
-    // Configure the item view ...
     itemView.String    = string( itemNo, 2 );
-    itemView.Font      = Clock::SecondFont;
+    itemView.Font      = ( itemCenter == itemNo )?  Clock::SecondFont : Clock::SmallerSecondFont;
     itemView.Color     = ( itemCenter == itemNo )? #FFFFFFFF : #FFFFFF80;
     itemView.Alignment = Views::TextAlignment[ AlignHorzCenter, AlignVertCenter ];
     itemView.ScrollOffset = <0,-2>;                  
@@ -1689,7 +1718,7 @@ class TimePicker : Templates::PickerControl
     var int32 itemCenter = ListHour.GetItemAtPosition( HourCenter );
     // Configure the item view ...     
     itemView.String    = string( itemNo ,2);
-    itemView.Font      = Clock::SecondFont;
+    itemView.Font      = ( itemCenter == itemNo )?  Clock::SecondFont : Clock::SmallerSecondFont;
     itemView.Color     = ( itemCenter == itemNo )? #FFFFFFFF : #FFFFFF80;
     itemView.Alignment = Views::TextAlignment[ AlignHorzCenter, AlignVertCenter ]; 
     itemView.ScrollOffset = <0,-2>;
@@ -1720,13 +1749,7 @@ class TimePicker : Templates::PickerControl
     // Take this displacement in account.
     ListSecond.ScrollOffset = ( value - 1 ) * -ListSecond.ItemHeight;
 
-    var int32 itemCenter = ListSecond.GetItemAtPosition( SecondCenter );
-    var Views::Text itemView = (Views::Text)ListSecond.GetViewForItem( itemCenter );
-    var int32 itemBelow = ListSecond.GetItemAtPosition( SecondCenter + <0,60>);
-    var Views::Text itemBelowView = (Views::Text)ListSecond.GetViewForItem( itemBelow );
-
-    if(itemView!=null) itemView.Color=#FFFFFFFF;
-    if(itemBelowView!=null) itemBelowView.Color=#FFFFFF80;      
+    UpdateCenterFont(ListSecond,SecondCenter);  
   }
 
   $rect <469,90,669,130>
@@ -1750,13 +1773,7 @@ class TimePicker : Templates::PickerControl
     // Take this displacement in account.
     ListMinute.ScrollOffset = ( value - 1 ) * -ListMinute.ItemHeight;
 
-    var int32 itemCenter = ListMinute.GetItemAtPosition( MinuteCenter );
-    var Views::Text itemView = (Views::Text)ListMinute.GetViewForItem( itemCenter );
-    var int32 itemBelow = ListMinute.GetItemAtPosition( MinuteCenter + <0,60>);
-    var Views::Text itemBelowView = (Views::Text)ListMinute.GetViewForItem( itemBelow );
-
-    if(itemView!=null) itemView.Color=#FFFFFFFF;
-    if(itemBelowView!=null) itemBelowView.Color=#FFFFFF80;
+    UpdateCenterFont(ListMinute,MinuteCenter);  
   }
 
   $rect <269,90,469,130>
@@ -1779,13 +1796,7 @@ class TimePicker : Templates::PickerControl
     // Take this displacement in account.
     ListHour.ScrollOffset = ( value - 1 ) * -ListHour.ItemHeight;
 
-    var int32 itemCenter = ListHour.GetItemAtPosition( HourCenter + <0,60>);
-    var Views::Text itemView = (Views::Text)ListHour.GetViewForItem( itemCenter );
-    var int32 itemBelow = ListHour.GetItemAtPosition( HourCenter + <0,60>);
-    var Views::Text itemBelowView = (Views::Text)ListHour.GetViewForItem( itemBelow );
-
-    if(itemView!=null) itemView.Color=#FFFFFFFF;
-    if(itemBelowView!=null) itemBelowView.Color=#FFFFFF80;
+    UpdateCenterFont(ListHour,HourCenter);  
   }
 
   $rect <20,20,160,60>
@@ -1955,13 +1966,13 @@ class TimePicker : Templates::PickerControl
   }
 
   $rect <690,240,890,280>
-  var point HourCenter = <49,97>;
+  var point HourCenter = <30,90>;
 
   $rect <690,279,890,319>
-  var point MinuteCenter = <124,97>;
+  var point MinuteCenter = <124,90>;
 
   $rect <690,320,890,360>
-  var point SecondCenter = <199,97>;
+  var point SecondCenter = <199,90>;
 
   $rect <470,150,670,190>
   method void SetTime( arg int32 value )
@@ -1980,6 +1991,84 @@ class TimePicker : Templates::PickerControl
     Minute=minutes;
     Hour=hours;
 
+  }
+
+  $rect <890,240,1090,280>
+  object Effects::ColorEffect ColorEffect
+  {
+    preset OnFinished = OnFinishedFlash;
+    preset Symmetric = true;
+    preset NoOfCycles = 5;
+    preset Enabled = false;
+    preset Value2 = #FF0000FF;
+    preset Value1 = #FFFFFFFF;
+    preset Outlet = ^TimeColor;
+  }
+
+  $rect <690,370,890,410>
+  property color TimeColor = #FFFFFFFF;
+
+  $rect <690,410,890,440>
+  onset TimeColor
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure TimeColor == value )
+      return;
+
+    // Remember the property's new value.
+    pure TimeColor = value;
+
+    UpdateCenterFont(ListSecond,SecondCenter); 
+    UpdateCenterFont(ListMinute,MinuteCenter); 
+    UpdateCenterFont(ListHour,HourCenter); 
+    // TO DO:
+    // 
+    // Now you can handle the alternation of the property.
+  }
+
+  $rect <690,450,890,490>
+  onget TimeColor
+  {
+    return pure TimeColor;
+  }
+
+  $rect <670,150,870,190>
+  method void UpdateCenterFont( arg Core::VerticalList TextList, arg point Center )
+  {
+    var int32 itemCenter = TextList.GetItemAtPosition( Center );
+    var Views::Text itemView = (Views::Text)TextList.GetViewForItem( itemCenter );
+    var int32 itemBelow = TextList.GetItemAtPosition( Center + <0,60>);
+    var Views::Text itemBelowView = (Views::Text)TextList.GetViewForItem( itemBelow );
+
+    if(itemView!=null) 
+    {
+      itemView.Color=TimeColor;
+      itemView.Font = Clock::SecondFont;
+    }
+    if(itemBelowView!=null)
+    {
+      itemBelowView.Color=#FFFFFF80;
+      itemBelowView.Font = Clock::SmallerSecondFont;
+    }
+  }
+
+  $rect <870,150,1070,190>
+  method void End( arg bool TimeOut )
+  {
+    if(TimeOut)
+    {
+      ColorEffect.Enabled=true;
+    }
+    else
+    {
+      Cover.Enabled=false;
+    }
+  }
+
+  $rect <890,280,1090,320>
+  slot OnFinishedFlash
+  {
+    Cover.Enabled=false;
   }
 
   $reorder OnSetOpacity 9
@@ -2169,6 +2258,7 @@ class TimerScreen : Core::Group
   object Views::Text Hour
   {
     preset Bounds = <458,9,640,70>;
+    preset Alignment = Views::TextAlignment[AlignHorzAuto, AlignHorzCenter, AlignVertCenter];
     preset String = "Text";
     preset Font = Clock::SecondFont;
   }
@@ -2176,7 +2266,7 @@ class TimerScreen : Core::Group
   $rect <20,20,160,60>
   object Clock::TimerClock TimerClock
   {
-    preset Bounds = <120,19,520,467>;
+    preset Bounds = <131,26,510,405>;
     preset OnChange = ChangeButtons;
   }
 
@@ -2223,10 +2313,7 @@ class TimerScreen : Core::Group
   $rect <198,680,400,720>
   slot OnCancel
   {
-    TimerClock.Enabled=false;
-    TimerClock.Running=false;
-
-    TimerClock.ResetTime();
+    TimerClock.ResetTime(false);
 
   }
 
@@ -2263,9 +2350,6 @@ class ChronometerScreen : Core::Group
     preset Enabled = true;
   }
 
-  $rect <0,630,190,670>
-  object Core::Time Time;
-
   $rect <210,590,410,630>
   slot WipeUpSlot
   {
@@ -2275,7 +2359,7 @@ class ChronometerScreen : Core::Group
   $rect <210,500,410,540>
   slot UpdateTime
   {
-    var Core::Time currentTime = Time.CurrentTime;
+    var Core::Time currentTime = Clock::Time.CurrentTime;
     Hour.String=string(currentTime.Hour/10)+string(currentTime.Hour%10)+":"+string(currentTime.Minute/10)+string(currentTime.Minute%10);
   }
 
@@ -2335,6 +2419,7 @@ class ChronometerScreen : Core::Group
   object Views::Text Hour
   {
     preset Bounds = <458,9,640,70>;
+    preset Alignment = Views::TextAlignment[AlignHorzAuto, AlignHorzCenter, AlignVertCenter];
     preset String = "Text";
     preset Font = Clock::SecondFont;
   }
@@ -2742,6 +2827,1316 @@ class Chronometer : Templates::ValueDisplay
   $reorder OnSetEnabled 2
 }
 
-$rect <480,230,680,270>
+$rect <279,70,479,110>
 $output false
 autoobject Effects::PointEffect PointEffect;
+
+$rect <480,230,680,270>
+$output false
+resource Resources::Font SmallerSecondFont
+{
+  attr fontname FontName = Agency FB;
+  attr fontheight Height = 35;
+  attr fontheightmode HeightMode = Popular;
+  attr fontquality Quality = High;
+  attr fontranges Ranges = 0x20-0xFF;
+  attr fontaspectratio AspectRatio = 1;
+  attr fontbold Bold = true;
+  attr fontitalic Italic = false;
+  attr fontkerning Kerning = true;
+  attr fontrowdistance RowDistance;
+}
+
+$rect <80,310,280,350>
+$output false
+class AlarmScreen : Core::Group
+{
+  $rect <0,540,200,580>
+  inherited method Init()
+  {
+    postsignal UpdateTime;
+
+  }
+
+  $rect <0,500,200,540>
+  inherited property Bounds = rect(0,0,$ScreenSize.x,$ScreenSize.y);
+
+  $rect <0,590,200,630>
+  object Core::Timer Timer
+  {
+    preset OnTrigger = UpdateTime;
+    preset Period = 100;
+    preset Enabled = true;
+  }
+
+  $rect <210,590,410,630>
+  slot WipeUpSlot
+  {
+    Owner.SwitchToDialog(new Clock::ClockScreen, Effects::SlideUpCentered, null, null, null, null, null, null, null, null, false );
+  }
+
+  $rect <210,500,410,540>
+  slot UpdateTime
+  {
+    var Core::Time currentTime =  Clock::Time.CurrentTime;
+    Hour.String=string(currentTime.Hour/10)+string(currentTime.Hour%10)+":"+string(currentTime.Minute/10)+string(currentTime.Minute%10);
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle Rectangle
+  {
+    preset Bounds = <0,0,640,480>;
+    preset Color = #00000058;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle Rectangle1
+  {
+    preset Bounds = <0,439,640,480>;
+    preset ColorBL = #4D5784FF;
+    preset ColorBR = #4D5784FF;
+    preset ColorTR = #4D578453;
+    preset ColorTL = #4D578453;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Image Image
+  {
+    preset Bounds = <295,430,345,480>;
+    preset Bitmap = Resources::NavigationIconsMedium;
+  }
+
+  $rect <20,20,160,60>
+  object Core::WipeTouchHandler WipeUp
+  {
+    preset Bounds = <0,430,640,479>;
+    preset OnTop = WipeUpSlot;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle Rectangle2
+  {
+    preset Bounds = <0,0,640,41>;
+    preset ColorBL = #4D5784FF;
+    preset ColorBR = #4D5784FF;
+    preset ColorTR = #4D5784FF;
+    preset ColorTL = #4D5784FF;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle Rectangle3
+  {
+    preset Bounds = <0,39,640,80>;
+    preset ColorBL = #4D578453;
+    preset ColorBR = #4D578453;
+    preset ColorTR = #4D5784FF;
+    preset ColorTL = #4D5784FF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Hour
+  {
+    preset Bounds = <458,9,640,70>;
+    preset Alignment = Views::TextAlignment[AlignHorzAuto, AlignHorzCenter, AlignVertCenter];
+    preset String = "00:00";
+    preset Font = Clock::SecondFont;
+  }
+
+  $rect <20,20,160,60>
+  object Clock::TimePicker TimePicker
+  {
+    preset Bounds = <125,128,373,325>;
+  }
+
+  $rect <20,20,160,60>
+  object Clock::DayOfTheWeekPicker DayOfTheWeekPicker
+  {
+    preset Bounds = <40,331,458,390>;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line;
+
+  $rect <20,20,160,60>
+  object Views::Line Line1
+  {
+    preset Point2 = <507,390>;
+    preset Point1 = <507,128>;
+    preset Width = 3;
+  }
+
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton AddButton
+  {
+    preset Bounds = <539,213,615,289>;
+    preset OnPress = OnAddButton;
+    preset Label = "+";
+    preset Appearance = WidgetSet::PushButton_Medium;
+  }
+
+  $rect <410,500,610,540>
+  slot OnAddButton
+  {
+    sender; /* the method is called from the sender object */
+  }
+}
+
+$rect <80,350,280,390>
+$output false
+class CalendarScreen : Core::Group
+{
+  $rect <0,540,200,580>
+  inherited method Init()
+  {
+    postsignal UpdateTime;
+
+  }
+
+  $rect <0,500,200,540>
+  inherited property Bounds = rect(0,0,$ScreenSize.x,$ScreenSize.y);
+
+  $rect <0,590,200,630>
+  object Core::Timer Timer
+  {
+    preset OnTrigger = UpdateTime;
+    preset Period = 100;
+    preset Enabled = true;
+  }
+
+  $rect <210,590,410,630>
+  slot WipeUpSlot
+  {
+    Owner.SwitchToDialog(new Clock::ClockScreen, Effects::SlideUpCentered, null, null, null, null, null, null, null, null, false );
+  }
+
+  $rect <210,500,410,540>
+  slot UpdateTime
+  {
+    var Core::Time currentTime =  Clock::Time.CurrentTime;
+    Hour.String=string(currentTime.Hour/10)+string(currentTime.Hour%10)+":"+string(currentTime.Minute/10)+string(currentTime.Minute%10);
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle Rectangle
+  {
+    preset Bounds = <0,0,640,480>;
+    preset Color = #00000058;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle Rectangle1
+  {
+    preset Bounds = <0,439,640,480>;
+    preset ColorBL = #4D5784FF;
+    preset ColorBR = #4D5784FF;
+    preset ColorTR = #4D578453;
+    preset ColorTL = #4D578453;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Image Image
+  {
+    preset Bounds = <295,430,345,480>;
+    preset Bitmap = Resources::NavigationIconsMedium;
+  }
+
+  $rect <20,20,160,60>
+  object Core::WipeTouchHandler WipeUp
+  {
+    preset Bounds = <0,430,640,479>;
+    preset OnTop = WipeUpSlot;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle Rectangle2
+  {
+    preset Bounds = <0,0,640,41>;
+    preset ColorBL = #4D5784FF;
+    preset ColorBR = #4D5784FF;
+    preset ColorTR = #4D5784FF;
+    preset ColorTL = #4D5784FF;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle Rectangle3
+  {
+    preset Bounds = <0,39,640,80>;
+    preset ColorBL = #4D578453;
+    preset ColorBR = #4D578453;
+    preset ColorTR = #4D5784FF;
+    preset ColorTL = #4D5784FF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Hour
+  {
+    preset Bounds = <458,9,640,70>;
+    preset String = "Text";
+    preset Font = Clock::SecondFont;
+  }
+
+  $rect <20,20,160,60>
+  object Clock::Chronometer Chronometer
+  {
+    preset Bounds = <62,172,579,343>;
+    preset OnChange = ChangeButtons;
+  }
+
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton ResetButton
+  {
+    preset Bounds = <244,357,394,407>;
+    preset Enabled = false;
+    preset OnPress = OnResetButton;
+    preset Label = "Reset";
+    preset Appearance = WidgetSet::PushButton_Medium;
+  }
+
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton PauseButton
+  {
+    preset Bounds = <94,357,244,407>;
+    preset Enabled = true;
+    preset OnPress = OnPauseButton;
+    preset Label = "Start";
+    preset Appearance = WidgetSet::PushButton_Medium;
+  }
+
+  $rect <210,630,410,670>
+  slot ChangeButtons
+  {
+    ResetButton.Enabled=Chronometer.Running;
+    SaveButton.Enabled=Chronometer.Running;
+  }
+
+  $rect <410,539,610,579>
+  slot OnPauseButton
+  {
+    switch(PauseButton.Label=="Pause")
+    {
+      case true:
+      {
+        Chronometer.Enabled=false;
+        PauseButton.Label="Start";
+      }
+      case false:
+      {
+        if(!Chronometer.Running) Chronometer.Running=true;
+        Chronometer.Enabled=true;
+        PauseButton.Label="Pause";
+      }
+      default:;
+    }
+
+  }
+
+  $rect <410,579,610,619>
+  slot OnResetButton
+  {
+    Chronometer.Enabled=false;
+    Chronometer.Running=false;
+    Chronometer.CurrentValue=0;
+  }
+
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton SaveButton
+  {
+    preset Bounds = <394,357,544,407>;
+    preset Enabled = false;
+    preset OnPress = OnSaveButton;
+    preset Label = "Save";
+    preset Appearance = WidgetSet::PushButton_Medium;
+  }
+
+  $rect <410,619,610,659>
+  slot OnSaveButton
+  {
+    var Views::Text txt=new Views::Text;
+    txt.Embedded=true;
+    txt.Bounds=<0,0,320,50>;
+    txt.Font=Clock::SecondFont;
+    txt.String=Chronometer.HourText.String+":"+ Chronometer.MinuteText.String+":"+Chronometer.SecondText.String+":"+Chronometer.MillisecondText.String;
+    Add( txt, 0 );
+    postsignal UpdateOutline;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle Rectangle4
+  {
+    preset Bounds = <320,110,640,160>;
+    preset ColorBL = #4D57844A;
+    preset ColorBR = #4D578492;
+    preset ColorTR = #4D578492;
+    preset ColorTL = #4D57844A;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle Rectangle5
+  {
+    preset Bounds = <0,110,320,160>;
+    preset ColorBL = #4D578492;
+    preset ColorBR = #4D57844A;
+    preset ColorTR = #4D57844A;
+    preset ColorTL = #4D578492;
+    preset Color = #FFFFFFFF;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Image Image1
+  {
+    preset Bounds = <595,110,645,160>;
+    preset ScrollOffset = <0,0>;
+    preset FrameNumber = 3;
+    preset Bitmap = Resources::NavigationIconsMedium;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Image Image2
+  {
+    preset Bounds = <0,110,50,160>;
+    preset ScrollOffset = <0,0>;
+    preset FrameNumber = 2;
+    preset Bitmap = Resources::NavigationIconsMedium;
+  }
+
+  $rect <210,670,410,710>
+  slot UpdateOutline
+  {
+    var Core::View view=Outline.GetViewAtIndex( Outline.CountViews()-1 );
+    Outline.EnsureVisible( view, true, Clock::PointEffect, null );
+  }
+
+  $rect <20,20,160,60>
+  object Core::Outline Outline
+  {
+    preset Bounds = <0,110,640,160>;
+    preset OnUpdate = null;
+    preset SlideHandler = SlideTouchHandler;
+    preset Formation = Core::Formation.LeftToRight;
+  }
+
+  $rect <20,20,160,60>
+  object Core::SlideTouchHandler SlideTouchHandler
+  {
+    preset Bounds = <0,110,640,160>;
+    preset SnapNext = <0,50>;
+    preset SlideVert = false;
+    preset RubberBandEffectElasticity = 5.0;
+  }
+}
+
+// This class implements a 'radio button' widget. When the user presses the button, \
+// the current value of the button represented by the property @Selected is set and \
+// a signal is sent to the slot method stored in the property @OnSelect. Once selected, \
+// the radio button remains in this state until the property @Selected is set to \
+// the value 'false' (e.g. in reaction to another radio button selection).
+// Alternatively the property @Outlet can refer to any other 'int32' property the \
+// widget should remain synchronized with. When the user selects the radio button, \
+// the affected property is automatically set to the value @OutletSelector. On the \
+// other hand, when the referred property is modified by another one, the radio button \
+// is automatically notified to remain in sync with the property.
+// This approach follows the Model-View-Controller (MVC) programming paradigm. Here \
+// the radio button represents the 'View' and 'Controller' and the property referred \
+// via 'Outlet' can be seen as a part of the 'Model'.
+$rect <-130,460,70,500>
+$output false
+class DayOfTheWeekPicker : Templates::RadioButton
+{
+  $rect <499,-10,699,30>
+  inherited property Bounds = <0,0,418,59>;
+
+  $rect <20,20,160,60>
+  object Clock::DayButton MonButton
+  {
+    preset Bounds = <59,0,119,60>;
+    preset WeekDay = 1;
+    preset OnSelected = OnSelect;
+    preset OnDeselected = OnDeselect;
+  }
+
+  $rect <20,20,160,60>
+  object Clock::DayButton TueButton
+  {
+    preset Bounds = <118,0,178,60>;
+    preset WeekDay = 2;
+    preset OnSelected = OnSelect;
+    preset OnDeselected = OnDeselect;
+  }
+
+  $rect <20,20,160,60>
+  object Clock::DayButton WedButton
+  {
+    preset Bounds = <177,0,237,60>;
+    preset WeekDay = 3;
+    preset OnSelected = OnSelect;
+    preset OnDeselected = OnDeselect;
+  }
+
+  $rect <20,20,160,60>
+  object Clock::DayButton ThuButton
+  {
+    preset Bounds = <237,0,297,60>;
+    preset WeekDay = 4;
+    preset OnSelected = OnSelect;
+    preset OnDeselected = OnDeselect;
+  }
+
+  $rect <20,20,160,60>
+  object Clock::DayButton FriButton
+  {
+    preset Bounds = <297,0,357,60>;
+    preset WeekDay = 5;
+    preset OnSelected = OnSelect;
+    preset OnDeselected = OnDeselect;
+  }
+
+  $rect <20,20,160,60>
+  object Clock::DayButton SatButton
+  {
+    preset Bounds = <357,0,417,60>;
+    preset WeekDay = 6;
+    preset OnSelected = OnSelect;
+    preset OnDeselected = OnDeselect;
+  }
+
+  $rect <20,20,160,60>
+  object Clock::DayButton SunButton
+  {
+    preset Bounds = <0,0,60,60>;
+    preset WeekDay = 0;
+    preset OnSelected = OnSelect;
+    preset OnDeselected = OnDeselect;
+  }
+
+  $rect <499,50,699,90>
+  array bool SelectedDays[ 7 ] =
+  (
+    Default[0] = false;
+    Default[1] = false;
+    Default[2] = false;
+    Default[3] = false;
+    Default[4] = false;
+    Default[5] = false;
+    Default[6] = false;
+  );
+
+  $rect <730,-10,930,30>
+  property int32 SelectedNumber = 0;
+
+  $rect <730,30,930,70>
+  onset SelectedNumber
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure SelectedNumber == value )
+      return;
+
+    // Remember the property's new value.
+    pure SelectedNumber = value;
+
+    // TO DO:
+    // 
+    // Now you can handle the alternation of the property.
+  }
+
+  $rect <730,70,930,110>
+  onget SelectedNumber
+  {
+    return pure SelectedNumber;
+  }
+
+  $rect <510,139,710,179>
+  slot OnSelect
+  {
+    var Clock::DayButton selectedDay = (Clock::DayButton)sender;
+    SelectedDays[selectedDay.WeekDay]=true;
+    SelectedNumber++;
+  }
+
+  $rect <510,179,710,219>
+  slot OnDeselect
+  {
+    var Clock::DayButton selectedDay = (Clock::DayButton)sender;
+    SelectedDays[selectedDay.WeekDay]=false;
+    SelectedNumber--;
+  }
+}
+
+// This class implements a 'push button' widget. When the user presses the button, \
+// a signal is sent to the slot method stored in its @OnActivate property.
+$rect <-130,510,70,550>
+$output false
+class DayButton : Templates::PushButton
+{
+  $rect <480,310,680,350>
+  inherited property Bounds = <0,0,60,60>;
+
+  $rect <380,110,580,150>
+  inherited onget Enabled
+  {
+    return pure Enabled;
+  }
+
+  $rect <380,70,580,110>
+  inherited onset Enabled
+  {
+    if ( pure Enabled == value )
+      return;
+
+    pure Enabled = value;
+  }
+
+  $rect <380,30,580,70>
+  inherited property Enabled = false;
+
+  $rect <20,20,160,60>
+  object Views::Bevel Bevel
+  {
+    preset Bounds = <0,0,60,59>;
+    preset Width = 4;
+    preset ColorL = #4D578453;
+    preset ColorR = #4D5784FF;
+    preset ColorB = #4D5784FF;
+    preset ColorT = #4D578453;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Caption
+  {
+    preset Bounds = <5,0,53,59>;
+    preset String = "Sun";
+    preset Font = Clock::SmallerSecondFont;
+  }
+
+  $rect <180,-10,380,30>
+  property int32 WeekDay = 0;
+
+  $rect <180,30,380,70>
+  onset WeekDay
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure WeekDay == value )
+      return;
+
+    // Remember the property's new value.
+    pure WeekDay = value;
+
+    ChangeWeekDayLabel(value);
+
+    // TO DO:
+    // 
+    // Now you can handle the alternation of the property.
+  }
+
+  $rect <180,70,380,110>
+  onget WeekDay
+  {
+    return pure WeekDay;
+  }
+
+  $rect <380,-10,580,30>
+  method void ChangeWeekDayLabel( arg int32 value )
+  {
+    Caption.String=Clock::Time.getDayOfWeekName( value, true );
+
+  }
+
+  $rect <180,110,380,150>
+  property slot OnSelected;
+
+  $rect <20,20,160,60>
+  object Core::SimpleTouchHandler SimpleTouchHandler
+  {
+    preset Point4 = <4,0>;
+    preset Point3 = <53,0>;
+    preset Point2 = <53,59>;
+    preset Point1 = <4,59>;
+    preset OnPress = ChangeState;
+  }
+
+  $rect <580,-10,780,30>
+  slot ChangeState
+  {
+    switch(Enabled)
+    {
+      case true: 
+      {
+        Caption.Color=#8FFFF5FF;
+        postsignal OnSelected;
+      }
+      case false:
+      {
+        Caption.Color=#FFFFFFFF;
+        postsignal OnDeselected;
+      }
+      default:;
+    }
+    Enabled=!Enabled;
+  }
+
+  $rect <180,150,380,190>
+  property slot OnDeselected;
+}
+
+$rect <-119,610,70,650>
+$output false
+autoobject Core::Time Time;
+
+// This component implements a simple menu item.
+$rect <80,560,280,600>
+$output false
+class EventItem : Templates::MenuItem
+{
+  $rect <310,-10,510,30>
+  inherited property Bounds = <0,0,299,40>;
+
+  $rect <510,30,710,70>
+  onset Caption
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure Caption == value )
+      return;
+
+    // Remember the property's new value.
+    pure Caption = value;
+
+    // ... and update the text displayed in the item
+    CaptionText.String = value;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text CaptionText
+  {
+    preset Layout = Core::Layout[AlignToLeft, AlignToRight, AlignToTop];
+    preset Bounds = <57,1,291,39>;
+    preset Ellipsis = true;
+    preset Alignment = Views::TextAlignment[AlignHorzLeft, AlignVertCenter];
+    preset String = "Event";
+    preset Font = Resources::FontMedium;
+    preset Color = #FFFFFFFF;
+  }
+
+  // The property 'Caption' stores the text to display within the item. 
+  $rect <510,-10,710,30>
+  property string Caption = "Event";
+
+  $rect <20,20,160,60>
+  object Views::Image Image
+  {
+    preset Bounds = <7,1,46,40>;
+    preset Alignment = Views::ImageAlignment[AlignHorzCenter, AlignVertCenter];
+    preset Bitmap = Resources::DefaultBitmap;
+  }
+
+  $rect <710,-10,910,30>
+  property Resources::Bitmap Icon = Resources::DefaultFrame;
+
+  $rect <710,30,910,70>
+  onset Icon
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure Icon == value )
+      return;
+
+    // Remember the property's new value.
+    pure Icon = value;
+
+    Image.Bitmap=Icon;
+    // TO DO:
+    // 
+    // Now you can handle the alternation of the property.
+  }
+
+  $rect <510,130,710,170>
+  property bool IsMiniature = false;
+
+  $rect <510,171,710,211>
+  onset IsMiniature
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure IsMiniature == value )
+      return;
+
+    // Remember the property's new value.
+    pure IsMiniature = value;
+
+    Resize();
+    // TO DO:
+    // 
+    // Now you can handle the alternation of the property.
+  }
+
+  $rect <310,-60,510,-20>
+  method void Resize()
+  {
+    switch(IsMiniature)
+    {
+      case true: 
+      {
+        Bounds=<0,0,39,39>;
+        SimpleTouchHandler.Enabled=false;
+      }
+      case false: 
+      {
+        Bounds=<0,0,300,39>;  
+        SimpleTouchHandler.Enabled=true;
+      }
+      default:;
+    }
+  }
+
+  $rect <20,20,160,60>
+  object Core::SimpleTouchHandler SimpleTouchHandler
+  {
+    preset Layout = Core::Layout[AlignToLeft, AlignToTop, ResizeHorz, ResizeVert];
+    preset Point4 = <0,0>;
+    preset Point3 = <300,0>;
+    preset Point2 = <299,38>;
+    preset Point1 = <0,38>;
+    preset OnPress = OnTouch;
+  }
+
+  $rect <310,80,510,120>
+  slot OnTouch
+  {
+    IsExpanded=!IsExpanded;
+  }
+
+  $rect <510,-60,710,-20>
+  method void Expand()
+  {
+    switch(IsExpanded)
+    {
+      case true: 
+      {
+        Bounds=<0,0,300,82>;
+        CancelButton.Visible=true;
+        CancelButton.Enabled=true;
+      }
+      case false: 
+      {
+        CancelButton.Visible=false;
+        CancelButton.Enabled=false;
+        Bounds=<0,0,300,41>;
+      }
+      default:;
+    }
+  }
+
+  $rect <510,210,710,250>
+  property bool IsExpanded;
+
+  $rect <510,250,710,290>
+  onset IsExpanded
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure IsExpanded == value )
+      return;
+
+    // Remember the property's new value.
+    pure IsExpanded = value;
+    Expand();
+    // TO DO:
+    // 
+    // Now you can handle the alternation of the property.
+  }
+
+  $rect <510,290,710,330>
+  onget IsExpanded
+  {
+    return pure IsExpanded;
+  }
+
+  $rect <20,20,160,60>
+  object WidgetSet::PushButton CancelButton
+  {
+    preset Layout = Core::Layout[AlignToBottom];
+    preset Bounds = <75,2,225,40>;
+    preset Enabled = false;
+    preset Visible = false;
+    preset OnPress = OnCancel;
+    preset Label = "Cancel";
+    preset Appearance = WidgetSet::PushButton_Medium;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Line Line
+  {
+    preset Layout = Core::Layout[AlignToBottom];
+    preset Point2 = <291,40>;
+    preset Point1 = <7,40>;
+    preset Width = 6;
+  }
+
+  $rect <310,130,510,170>
+  slot OnCancel
+  {
+    postsignal OnCancelled;
+  }
+
+  $rect <510,330,710,370>
+  property bool OnCancelled;
+}
+
+// This class implements the item component for the Clock::ListBox widget. You will \
+// probably never need to directly instantiate and control this item component.
+$rect <80,650,280,690>
+$output false
+class WeekItem : Templates::ListItem
+{
+  $rect <400,-10,600,30>
+  inherited property Bounds = <0,0,315,40>;
+
+  $rect <20,20,160,60>
+  object Clock::DateDayButton Day1
+  {
+    preset Bounds = <0,0,45,40>;
+  }
+
+  $rect <20,20,160,60>
+  object Clock::DateDayButton Day2
+  {
+    preset Bounds = <45,0,90,40>;
+  }
+
+  $rect <20,20,160,60>
+  object Clock::DateDayButton Day3
+  {
+    preset Bounds = <90,0,135,40>;
+  }
+
+  $rect <20,20,160,60>
+  object Clock::DateDayButton Day4
+  {
+    preset Bounds = <135,0,180,40>;
+  }
+
+  $rect <20,20,160,60>
+  object Clock::DateDayButton Day5
+  {
+    preset Bounds = <180,0,225,40>;
+  }
+
+  $rect <20,20,160,60>
+  object Clock::DateDayButton Day6
+  {
+    preset Bounds = <225,0,270,40>;
+  }
+
+  $rect <20,20,160,60>
+  object Clock::DateDayButton Day7
+  {
+    preset Bounds = <270,0,315,40>;
+  }
+}
+
+// This class implements a 'push button' widget. When the user presses the button, \
+// a signal is sent to the slot method stored in its @OnActivate property.
+$rect <-130,560,70,600>
+$output false
+class DateDayButton : Templates::PushButton
+{
+  $rect <480,310,680,350>
+  inherited property Bounds = <0,0,45,40>;
+
+  $rect <20,20,160,60>
+  object Views::Bevel Bevel
+  {
+    preset Bounds = <-2,0,43,40>;
+    preset Width = 4;
+    preset ColorL = #4D57841C;
+    preset ColorR = #4D57847E;
+    preset ColorB = #4D57847E;
+    preset ColorT = #4D57841C;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Rectangle Rectangle
+  {
+    preset Bounds = <-2,0,43,40>;
+    preset Color = #4D578400;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text Caption
+  {
+    preset Bounds = <-2,0,43,40>;
+    preset String = " ";
+    preset Font = Clock::SmallerSecondFont;
+  }
+
+  $rect <180,-10,380,30>
+  property int32 Day = -1;
+
+  $rect <180,30,380,70>
+  onset Day
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure Day == value )
+      return;
+
+    // Remember the property's new value.
+    pure Day = value;
+
+    ChangeWeekDayLabel(value);
+
+    // TO DO:
+    // 
+    // Now you can handle the alternation of the property.
+  }
+
+  $rect <180,70,380,110>
+  onget Day
+  {
+    return pure Day;
+  }
+
+  $rect <380,-10,580,30>
+  method void ChangeWeekDayLabel( arg int32 value )
+  {
+    if(value==-1) Caption.String="  ";
+    else Caption.String=string(value,2);
+
+  }
+
+  $rect <180,110,380,150>
+  property slot OnSelected;
+
+  $rect <20,20,160,60>
+  object Core::SimpleTouchHandler SimpleTouchHandler
+  {
+    preset Point4 = <5,4>;
+    preset Point3 = <33,4>;
+    preset Point2 = <33,36>;
+    preset Point1 = <5,36>;
+    preset OnPress = ChangeState;
+  }
+
+  $rect <580,-10,780,30>
+  slot ChangeState
+  {
+    switch(!Active)
+    {
+      case true: 
+      {
+        Rectangle.Color=#4D578453;
+        postsignal OnSelected;
+      }
+      case false:
+      {
+        Rectangle.Color=#4D578400;
+      }
+      default:;
+    }
+    Active=!Active;
+  }
+
+  $rect <380,110,580,150>
+  onget Active
+  {
+    return pure Active;
+  }
+
+  $rect <380,70,580,110>
+  onset Active
+  {
+    if ( pure Active == value )
+      return;
+
+    pure Active = value;
+  }
+
+  // The property 'Enabled' determines whether the component is able to react to \
+  // user input events. Disabled components will never receive these events.
+  // The @Enabled property is reflected in the current state of the component Core::ViewState.Enabled. \
+  // This state can be evaluated in the implementation of the @UpdateViewState() \
+  // method. For example, the method may show disabled components with pale colors, \
+  // etc.
+  // Please note, changing the enabled state of the component currently selected \
+  // in the @Focus property will cause the framework to select other sibling view, \
+  // which will be able to react to keyboard events.
+  $rect <380,30,580,70>
+  property bool Active = false;
+}
+
+// This class implements the item component for the Clock::ListBox widget. You will \
+// probably never need to directly instantiate and control this item component.
+$rect <80,690,280,730>
+$output false
+class MonthItem : Templates::ListItem
+{
+  $rect <400,-10,600,30>
+  inherited property Bounds = <0,0,315,318>;
+
+  $rect <20,20,160,60>
+  object Views::Text SunText
+  {
+    preset Bounds = <0,39,45,78>;
+    preset String = "Sun";
+    preset Font = Resources::FontMedium;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text MonText
+  {
+    preset Bounds = <45,39,90,78>;
+    preset String = "Mon";
+    preset Font = Resources::FontMedium;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text TueText
+  {
+    preset Bounds = <90,39,135,78>;
+    preset String = "Tue";
+    preset Font = Resources::FontMedium;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text WedText
+  {
+    preset Bounds = <135,39,180,78>;
+    preset String = "Wed";
+    preset Font = Resources::FontMedium;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text ThuText
+  {
+    preset Bounds = <180,39,225,78>;
+    preset String = "Thu";
+    preset Font = Resources::FontMedium;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text FriText
+  {
+    preset Bounds = <225,39,270,78>;
+    preset String = "Fri";
+    preset Font = Resources::FontMedium;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text SatText
+  {
+    preset Bounds = <270,39,315,78>;
+    preset String = "Sat";
+    preset Font = Resources::FontMedium;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text YearText
+  {
+    preset Bounds = <0,0,157,39>;
+    preset String = "0000";
+    preset Font = Resources::FontMedium;
+  }
+
+  $rect <20,20,160,60>
+  object Core::VerticalList VerticalList
+  {
+    preset Bounds = <0,78,315,318>;
+    preset OnLoadItem = OnLoadItem;
+    preset ItemHeight = 40;
+    preset NoOfItems = 6;
+    preset ItemClass = Clock::WeekItem;
+  }
+
+  // This method is called by 'VerticalList' every time the list loads or updates \
+  // an item.
+  $rect <400,50,600,90>
+  slot OnLoadItem
+  {
+    /*
+
+      Hint:
+
+      - The code below demonstrates a simple usage of the list component.
+
+      - The list component creates and manages automatically view item instances of
+        the class specified in its property 'ItemClass'. In this example it is the
+        class 'Views::Text'.
+
+      - When you change the 'ItemClass' property you will also need to replace
+        accordingly all 'Views::Text' occurrences in the below code.
+
+      - You will also need to adapt the initialization of the 'itemView'.
+
+    */
+
+    // Get the number of the item to load. The list component takes care of the
+    // creation of the corresponding item view. Just access it ...
+    var int32       itemNo   = VerticalList.Item;
+    var Views::Text itemView = (Views::Text)VerticalList.View;
+
+    // The implementation of this slot method does not match the item class
+    // specified in the associated list component. Or the slot method is not
+    // called in context of the OnLoadItem list operation. 
+    if ( itemView == null )
+      return;
+
+    // Configure the item view ...
+    itemView.String = "Item #" + string( itemNo );
+    itemView.Font   = Resources::FontMedium;
+    itemView.Color  = #FFFFFFFF;
+
+    // Ensure that the item has correct size. The position of the item will be
+    // managed by the list component.
+    itemView.Bounds.size = point( VerticalList.Bounds.w, VerticalList.ItemHeight );
+  }
+
+  $rect <400,110,600,150>
+  method void LoadMonth( arg int32 offset, arg int32 currentMonth, arg int32 currentYear )
+  {
+    var int32 month=currentMonth + offset;
+    var int32 addedYears;
+
+    if(month>12)
+    {
+      addedYears=int32(float(offset + currentMonth)/12.0);
+      trace offset;
+      trace month;
+      trace int32(float(offset)/12.0 +1.0);
+      month=month-addedYears*12;
+      trace addedYears;
+    }
+    if(month<1)
+    {
+      month=12+month;
+    }
+
+    var int32 year=currentYear + addedYears;
+
+    MonthText.String=Clock::Time.getMonthName( month, true);
+    YearText.String=year;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text MonthText
+  {
+    preset Bounds = <158,0,315,39>;
+    preset String = "0000";
+    preset Font = Resources::FontMedium;
+  }
+}
+
+// This class implements the Clock::ListBox widget. This widget is intended to display \
+// a list of options and permit the user to select the desired option. Selecting \
+// the option sends a signal to the slot method stored in the property @OnSelect.
+// Alternatively the property @Outlet can refer to any other 'int32' property the \
+// widget should remain synchronized with. When the user selects an option, the affected \
+// property is automatically updated to reflect the number of the selected option. \
+// On the other hand, when the referred property is modified by another one, the \
+// ListBox is automatically notified to remain in sync with the property.
+// The total number of available ListBox items (the number of options) is determined \
+// by the property @NoOfItems. Which option is actually selected is controlled by \
+// the property @SelectedItem.
+// The items are loaded dynamically at the runtime. For this purpose a slot method \
+// has to be implemented and assigned to the @OnLoadItem property. The ListBox will \
+// invoke the slot method automatically each time it needs an item to be loaded. \
+// Within the slot method the implementation can access and initialize the affected \
+// item by using the variable @View.
+// In order to trigger the list to reload one or more items, invoke the method @InvalidateItems(). \
+// The list box will thereupon schedule the necessary loading steps automatically.
+$rect <80,610,280,650>
+$output false
+class MonthList : Templates::List
+{
+  $rect <690,-10,890,30>
+  inherited method Init()
+  {
+    CurrentTime=Clock::Time.CurrentTime;
+    CurrentTime.Month=1;
+  }
+
+  $rect <450,40,650,80>
+  inherited property Bounds = <0,0,315,330>;
+
+  $rect <20,20,160,60>
+  object Core::VerticalList VerticalList
+  {
+    preset Bounds = <0,6,315,324>;
+    preset OnLoadItem = OnLoadItem;
+    preset SlideHandler = SlideTouchHandler;
+    preset ScrollOffset = -381918;
+    preset ItemHeight = 318;
+    preset NoOfItems = 2401;
+    preset ItemClass = Clock::MonthItem;
+  }
+
+  // This method is called by 'VerticalList1' every time the list loads or updates \
+  // an item.
+  $rect <450,-10,650,30>
+  slot OnLoadItem
+  {
+    /*
+
+      Hint:
+
+      - The code below demonstrates a simple usage of the list component.
+
+      - The list component creates and manages automatically view item instances of
+        the class specified in its property 'ItemClass'. In this example it is the
+        class 'Views::Text'.
+
+      - When you change the 'ItemClass' property you will also need to replace
+        accordingly all 'Views::Text' occurrences in the below code.
+
+      - You will also need to adapt the initialization of the 'itemView'.
+
+    */
+
+    // Get the number of the item to load. The list component takes care of the
+    // creation of the corresponding item view. Just access it ...
+    var int32       itemNo   = VerticalList.Item;
+    var Clock::MonthItem itemView = (Clock::MonthItem)VerticalList.View;
+
+    // The implementation of this slot method does not match the item class
+    // specified in the associated list component. Or the slot method is not
+    // called in context of the OnLoadItem list operation. 
+    if ( itemView == null )
+      return;
+
+    // Configure the item view ...
+    itemView.LoadMonth( itemNo - 1201, CurrentTime.Month, CurrentTime.Year );
+
+    // Ensure that the item has correct size. The position of the item will be
+    // managed by the list component.
+    itemView.Bounds.size = point( VerticalList.Bounds.w, VerticalList.ItemHeight );
+  }
+
+  $rect <20,20,160,60>
+  object Core::SlideTouchHandler SlideTouchHandler
+  {
+    preset Bounds = <0,6,315,323>;
+    preset Offset = <0,0>;
+    preset SnapNext = <0,318>;
+    preset SlideHorz = false;
+  }
+
+  $rect <450,99,650,139>
+  property Core::Time CurrentTime;
+
+  $rect <450,139,650,179>
+  onset CurrentTime
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure CurrentTime == value )
+      return;
+
+    // Remember the property's new value.
+    pure CurrentTime = value;
+
+    // TO DO:
+    // 
+    // Now you can handle the alternation of the property.
+  }
+
+  $rect <450,179,650,219>
+  onget CurrentTime
+  {
+    return pure CurrentTime;
+  }
+}
