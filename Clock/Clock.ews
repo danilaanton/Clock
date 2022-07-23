@@ -3,10 +3,10 @@ $version 1.0
 attr active = Clock::MonthList;
 attr callStackMonitor_Show = false;
 attr codeColSelect = false;
-attr codeFirstPos = <0,21>;
-attr codeInspector = Clock::MonthList.OnLoadItem;
-attr codeSelEnd = <33,30>;
-attr codeSelStart = <33,30>;
+attr codeFirstPos = <0,0>;
+attr codeInspector = Clock::MonthList.ItemSelected;
+attr codeSelEnd = <23,1>;
+attr codeSelStart = <23,1>;
 attr connectInspectors = false;
 attr debug_TrackUpdates = false;
 attr extractDoc_ClassOverview = true;
@@ -76,12 +76,12 @@ view class Clock::DateDayButton
 view class Clock::WeekItem
 {
   attr codeColSelect = false;
-  attr codeFirstPos = <0,19>;
-  attr codeInspector = OnLoadItem;
-  attr codeSelEnd = <19,30>;
-  attr codeSelStart = <19,30>;
+  attr codeFirstPos = <0,0>;
+  attr codeInspector = ItemSelected;
+  attr codeSelEnd = <24,1>;
+  attr codeSelStart = <24,1>;
   attr enableWireMode = false;
-  attr scrollTo = <687,-7>;
+  attr scrollTo = <762,-61>;
   attr zoom = 1.0;
 }
 
@@ -95,12 +95,12 @@ view unit Core
 view class Clock::MonthList
 {
   attr codeColSelect = false;
-  attr codeFirstPos = <0,21>;
-  attr codeInspector = OnLoadItem;
-  attr codeSelEnd = <33,30>;
-  attr codeSelStart = <33,30>;
+  attr codeFirstPos = <0,0>;
+  attr codeInspector = ItemSelected;
+  attr codeSelEnd = <23,1>;
+  attr codeSelStart = <23,1>;
   attr enableWireMode = true;
-  attr scrollTo = <23,-52>;
+  attr scrollTo = <481,-52>;
   attr zoom = 0.75;
 }
 

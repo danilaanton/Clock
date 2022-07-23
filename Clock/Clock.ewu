@@ -3750,6 +3750,7 @@ class WeekItem : Templates::ListItem
     // Configure the item view ...
     itemView.Date=Days[itemNo];  
     itemView.Selectable=Days[itemNo].Month==Month;
+    itemView.OnSelected=ItemSelected;
 
     // Ensure that the item has correct size. The position of the item will be
     // managed by the list component.
@@ -3797,6 +3798,21 @@ class WeekItem : Templates::ListItem
   {
     return pure Month;
   }
+
+  // The property 'Bounds' defines the position and the size of the view in the coordinates \
+  // of the corresponding @Owner.
+  $rect <1080,10,1280,50>
+  property slot OnSelected = null;
+
+  $rect <1080,50,1280,90>
+  slot ItemSelected
+  {
+    Selected=(Clock::DateDayButton)sender;
+    postsignal OnSelected;
+  }
+
+  $rect <1280,10,1480,50>
+  property Clock::DateDayButton Selected = null;
 }
 
 // This class implements a 'push button' widget. When the user presses the button, \
@@ -4049,6 +4065,7 @@ class MonthList : Templates::List
     // Configure the item view ...                                                     
     itemView.FillButtons(FitToDayOfWeek(CurrentTime).Add( Clock::TimeSpan.Initialize2( 7*itemNo,0,0,0 )));
     itemView.Month=CurrentTime.Month;
+    itemView.OnSelected=ItemSelected;
     // Ensure that the item has correct size. The position of the item will be
     // managed by the list component.
     itemView.Bounds.size = point( VerticalList.Bounds.w, VerticalList.ItemHeight );
@@ -4199,6 +4216,22 @@ class MonthList : Templates::List
     Month--;
     VerticalList.InvalidateItems( 0, 5 );
   }
+
+  // The property 'Bounds' defines the position and the size of the view in the coordinates \
+  // of the corresponding @Owner.
+  $rect <1180,-30,1380,10>
+  property slot OnSelected = null;
+
+  $rect <1180,10,1380,50>
+  slot ItemSelected
+  {
+    var Clock::WeekItem item =(Clock::WeekItem)sender;
+    Selected=item.Selected;
+    postsignal OnSelected;
+  }
+
+  $rect <1380,-30,1580,10>
+  property Clock::DateDayButton Selected = null;
 }
 
 $rect <-119,650,71,690>

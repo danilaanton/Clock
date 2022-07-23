@@ -3749,7 +3749,7 @@ class WeekItem : Templates::ListItem
 
     // Configure the item view ...
     itemView.Date=Days[itemNo];  
-    itemView.SimpleTouchHandler.Enabled=Days[itemNo].Month==Month;
+    itemView.Selectable=Days[itemNo].Month==Month;
 
     // Ensure that the item has correct size. The position of the item will be
     // managed by the list component.
@@ -3814,8 +3814,8 @@ class DateDayButton : Templates::PushButton
     preset Bounds = <-2,0,43,40>;
     preset Width = 4;
     preset ColorL = #4D57841C;
-    preset ColorR = #4D57847E;
-    preset ColorB = #4D57847E;
+    preset ColorR = #4D57845D;
+    preset ColorB = #4D57845D;
     preset ColorT = #4D57841C;
   }
 
@@ -3823,7 +3823,7 @@ class DateDayButton : Templates::PushButton
   object Views::Rectangle Rectangle
   {
     preset Bounds = <-2,0,43,40>;
-    preset Color = #4D578444;
+    preset Color = #4D578428;
     preset Visible = false;
   }
 
@@ -3926,6 +3926,46 @@ class DateDayButton : Templates::PushButton
   // which will be able to react to keyboard events.
   $rect <380,30,580,70>
   property bool Active = false;
+
+  $rect <580,110,780,150>
+  onget Selectable
+  {
+    return pure Selectable;
+  }
+
+  $rect <580,70,780,110>
+  onset Selectable
+  {
+    if ( pure Selectable == value )
+      return;
+
+    pure Selectable = value;
+
+    if(Selectable)
+    {
+      SimpleTouchHandler.Enabled=true;
+      Rectangle.Visible=false;
+      Caption.Color=#FFFFFFFF;
+    }
+    else
+    {
+      SimpleTouchHandler.Enabled=false;
+      Rectangle.Visible=true;
+      Caption.Color=#4D578444;
+    }
+  }
+
+  // The property 'Enabled' determines whether the component is able to react to \
+  // user input events. Disabled components will never receive these events.
+  // The @Enabled property is reflected in the current state of the component Core::ViewState.Enabled. \
+  // This state can be evaluated in the implementation of the @UpdateViewState() \
+  // method. For example, the method may show disabled components with pale colors, \
+  // etc.
+  // Please note, changing the enabled state of the component currently selected \
+  // in the @Focus property will cause the framework to select other sibling view, \
+  // which will be able to react to keyboard events.
+  $rect <580,30,780,70>
+  property bool Selectable = true;
 }
 
 // This class implements the Clock::ListBox widget. This widget is intended to display \
