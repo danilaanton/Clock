@@ -3,10 +3,10 @@ $version 1.0
 attr active = Clock::MonthList;
 attr callStackMonitor_Show = false;
 attr codeColSelect = false;
-attr codeFirstPos = <0,0>;
+attr codeFirstPos = <0,21>;
 attr codeInspector = Clock::MonthList.OnLoadItem;
-attr codeSelEnd = <40,6>;
-attr codeSelStart = <40,6>;
+attr codeSelEnd = <33,30>;
+attr codeSelStart = <33,30>;
 attr connectInspectors = false;
 attr debug_TrackUpdates = false;
 attr extractDoc_ClassOverview = true;
@@ -43,7 +43,7 @@ view Project
 view unit Clock
 {
   attr enableWireMode = false;
-  attr scrollTo = <-396,66>;
+  attr scrollTo = <-121,235>;
   attr zoom = 0.75;
 }
 
@@ -61,45 +61,57 @@ view unit Resources
   attr zoom = 1.0;
 }
 
-view class Clock::WeekItem
+view class Clock::DateDayButton
 {
+  attr codeColSelect = false;
+  attr codeFirstPos = <0,0>;
+  attr codeInspector = OnSetSelectable;
+  attr codeSelEnd = <35,13>;
+  attr codeSelStart = <35,13>;
   attr enableWireMode = false;
-  attr scrollTo = <-15,-11>;
+  attr scrollTo = <-75,-47>;
   attr zoom = 1.0;
 }
 
-view class Clock::MonthItem
+view class Clock::WeekItem
 {
   attr codeColSelect = false;
-  attr codeFirstPos = <0,5>;
-  attr codeInspector = LoadMonth;
-  attr codeSelEnd = <24,12>;
-  attr codeSelStart = <24,12>;
+  attr codeFirstPos = <0,19>;
+  attr codeInspector = OnLoadItem;
+  attr codeSelEnd = <19,30>;
+  attr codeSelStart = <19,30>;
   attr enableWireMode = false;
-  attr scrollTo = <-7,-7>;
+  attr scrollTo = <687,-7>;
+  attr zoom = 1.0;
+}
+
+view unit Core
+{
+  attr enableWireMode = false;
+  attr scrollTo = <-7,362>;
   attr zoom = 1.0;
 }
 
 view class Clock::MonthList
 {
   attr codeColSelect = false;
-  attr codeFirstPos = <0,0>;
+  attr codeFirstPos = <0,21>;
   attr codeInspector = OnLoadItem;
-  attr codeSelEnd = <40,6>;
-  attr codeSelStart = <40,6>;
-  attr enableWireMode = false;
-  attr scrollTo = <-306,-108>;
-  attr zoom = 0.5;
+  attr codeSelEnd = <33,30>;
+  attr codeSelStart = <33,30>;
+  attr enableWireMode = true;
+  attr scrollTo = <23,-52>;
+  attr zoom = 0.75;
 }
 
-view class Clock::ClockScreen
+view class Clock::TimePicker
 {
   attr codeColSelect = false;
   attr codeFirstPos = <0,0>;
-  attr codeInspector = UpdateTime;
-  attr codeSelEnd = <112,5>;
-  attr codeSelStart = <97,5>;
+  attr codeInspector = UpdateCenterFont;
+  attr codeSelEnd = <68,7>;
+  attr codeSelStart = <68,7>;
   attr enableWireMode = false;
-  attr scrollTo = <-7,466>;
+  attr scrollTo = <418,-7>;
   attr zoom = 1.0;
 }

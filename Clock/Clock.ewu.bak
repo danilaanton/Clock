@@ -3686,49 +3686,116 @@ $rect <80,650,280,690>
 $output false
 class WeekItem : Templates::ListItem
 {
-  $rect <400,-10,600,30>
+  $rect <680,10,880,50>
   inherited property Bounds = <0,0,315,40>;
 
-  $rect <20,20,160,60>
-  object Clock::DateDayButton Day1
+  $rect <680,50,880,90>
+  method void FillButtons( arg Core::Time time )
   {
-    preset Bounds = <0,0,45,40>;
+    var Core::TimeSpan span=Clock::TimeSpan.Initialize2( 1, 0, 0, 0 );
+    var int32 index;
+    for(index=0;index<7;index++)
+      { 
+        Days[index]=time;
+        time=time.Add(span);  
+      }
+
+    HorizontalList.InvalidateItems( 0, 6 );
+                            
   }
 
   $rect <20,20,160,60>
-  object Clock::DateDayButton Day2
+  object Core::HorizontalList HorizontalList
   {
-    preset Bounds = <45,0,90,40>;
+    preset Bounds = <0,0,315,40>;
+    preset OnLoadItem = OnLoadItem;
+    preset ItemWidth = 45;
+    preset NoOfItems = 7;
+    preset ItemClass = Clock::DateDayButton;
   }
 
-  $rect <20,20,160,60>
-  object Clock::DateDayButton Day3
+  // This method is called by 'HorizontalList' every time the list loads or updates \
+  // an item.
+  $rect <880,10,1080,50>
+  slot OnLoadItem
   {
-    preset Bounds = <90,0,135,40>;
+    /*
+
+      Hint:
+
+      - The code below demonstrates a simple usage of the list component.
+
+      - The list component creates and manages automatically view item instances of
+        the class specified in its property 'ItemClass'. In this example it is the
+        class 'Views::Image'.
+
+      - When you change the 'ItemClass' property you will also need to replace
+        accordingly all 'Views::Image' occurrences in the below code.
+
+      - You will also need to adapt the initialization of the 'itemView'.
+
+    */
+
+    // Get the number of the item to load. The list component takes care of the
+    // creation of the corresponding item view. Just access it ...
+    var int32        itemNo   = HorizontalList.Item;
+    var Clock::DateDayButton itemView = (Clock::DateDayButton)HorizontalList.View;
+
+    // The implementation of this slot method does not match the item class
+    // specified in the associated list component. Or the slot method is not
+    // called in context of the OnLoadItem list operation. 
+    if ( itemView == null )
+      return;
+
+    // Configure the item view ...
+    itemView.Date=Days[itemNo];  
+    itemView.SimpleTouchHandler.Enabled=Days[itemNo].Month==Month;
+
+    // Ensure that the item has correct size. The position of the item will be
+    // managed by the list component.
+    itemView.Bounds.size = point( HorizontalList.ItemWidth, HorizontalList.Bounds.h );
   }
 
-  $rect <20,20,160,60>
-  object Clock::DateDayButton Day4
+  $rect <880,50,1080,90>
+  array Core::Time Days[ 7 ] =
+  (
+    Default[0] = Clock::Time;
+    Default[1] = Clock::Time;
+    Default[2] = Clock::Time;
+    Default[3] = Clock::Time;
+    Default[4] = Clock::Time;
+    Default[5] = Clock::Time;
+    Default[6] = Clock::Time;
+  );
+
+  $rect <680,90,880,130>
+  method Core::Time GetDate( arg int32 index )
   {
-    preset Bounds = <135,0,180,40>;
+    return Days[index];
   }
 
-  $rect <20,20,160,60>
-  object Clock::DateDayButton Day5
+  $rect <880,90,1080,130>
+  property int32 Month;
+
+  $rect <880,130,1080,170>
+  onset Month
   {
-    preset Bounds = <180,0,225,40>;
+    // The value doesn't change - nothing to do.
+    if ( pure Month == value )
+      return;
+
+    // Remember the property's new value.
+    pure Month = value;
+
+    // TO DO:
+    // 
+    // Now you can handle the alternation of the property.
   }
 
-  $rect <20,20,160,60>
-  object Clock::DateDayButton Day6
+  $rect <880,170,1080,210>
+  onget Month
   {
-    preset Bounds = <225,0,270,40>;
-  }
-
-  $rect <20,20,160,60>
-  object Clock::DateDayButton Day7
-  {
-    preset Bounds = <270,0,315,40>;
+    return pure Month;
   }
 }
 
@@ -3756,7 +3823,8 @@ class DateDayButton : Templates::PushButton
   object Views::Rectangle Rectangle
   {
     preset Bounds = <-2,0,43,40>;
-    preset Color = #4D578400;
+    preset Color = #4D578444;
+    preset Visible = false;
   }
 
   $rect <20,20,160,60>
@@ -3768,17 +3836,17 @@ class DateDayButton : Templates::PushButton
   }
 
   $rect <180,-10,380,30>
-  property int32 Day = -1;
+  property Core::Time Date = Clock::Time;
 
   $rect <180,30,380,70>
-  onset Day
+  onset Date
   {
     // The value doesn't change - nothing to do.
-    if ( pure Day == value )
+    if ( pure Date == value )
       return;
 
     // Remember the property's new value.
-    pure Day = value;
+    pure Date = value;
 
     ChangeWeekDayLabel(value);
 
@@ -3788,16 +3856,15 @@ class DateDayButton : Templates::PushButton
   }
 
   $rect <180,70,380,110>
-  onget Day
+  onget Date
   {
-    return pure Day;
+    return pure Date;
   }
 
   $rect <380,-10,580,30>
-  method void ChangeWeekDayLabel( arg int32 value )
+  method void ChangeWeekDayLabel( arg Core::Time time )
   {
-    if(value==-1) Caption.String="  ";
-    else Caption.String=string(value,2);
+    Caption.String=string(time.Day,2);
 
   }
 
@@ -3811,26 +3878,26 @@ class DateDayButton : Templates::PushButton
     preset Point3 = <33,4>;
     preset Point2 = <33,36>;
     preset Point1 = <5,36>;
+    preset OnLeave = null;
+    preset OnRelease = ChangeState;
     preset OnPress = ChangeState;
   }
 
   $rect <580,-10,780,30>
   slot ChangeState
   {
-    switch(!Active)
+    if(!Active)
     {
-      case true: 
-      {
-        Rectangle.Color=#4D578453;
-        postsignal OnSelected;
-      }
-      case false:
-      {
-        Rectangle.Color=#4D578400;
-      }
-      default:;
+      Rectangle.Visible=true;
+      postsignal OnSelected;
     }
+    else
+    {
+      Rectangle.Visible=false;
+    }
+
     Active=!Active;
+
   }
 
   $rect <380,110,580,150>
@@ -3861,167 +3928,6 @@ class DateDayButton : Templates::PushButton
   property bool Active = false;
 }
 
-// This class implements the item component for the Clock::ListBox widget. You will \
-// probably never need to directly instantiate and control this item component.
-$rect <80,690,280,730>
-$output false
-class MonthItem : Templates::ListItem
-{
-  $rect <400,-10,600,30>
-  inherited property Bounds = <0,0,315,318>;
-
-  $rect <20,20,160,60>
-  object Views::Text SunText
-  {
-    preset Bounds = <0,39,45,78>;
-    preset String = "Sun";
-    preset Font = Resources::FontMedium;
-  }
-
-  $rect <20,20,160,60>
-  object Views::Text MonText
-  {
-    preset Bounds = <45,39,90,78>;
-    preset String = "Mon";
-    preset Font = Resources::FontMedium;
-  }
-
-  $rect <20,20,160,60>
-  object Views::Text TueText
-  {
-    preset Bounds = <90,39,135,78>;
-    preset String = "Tue";
-    preset Font = Resources::FontMedium;
-  }
-
-  $rect <20,20,160,60>
-  object Views::Text WedText
-  {
-    preset Bounds = <135,39,180,78>;
-    preset String = "Wed";
-    preset Font = Resources::FontMedium;
-  }
-
-  $rect <20,20,160,60>
-  object Views::Text ThuText
-  {
-    preset Bounds = <180,39,225,78>;
-    preset String = "Thu";
-    preset Font = Resources::FontMedium;
-  }
-
-  $rect <20,20,160,60>
-  object Views::Text FriText
-  {
-    preset Bounds = <225,39,270,78>;
-    preset String = "Fri";
-    preset Font = Resources::FontMedium;
-  }
-
-  $rect <20,20,160,60>
-  object Views::Text SatText
-  {
-    preset Bounds = <270,39,315,78>;
-    preset String = "Sat";
-    preset Font = Resources::FontMedium;
-  }
-
-  $rect <20,20,160,60>
-  object Views::Text YearText
-  {
-    preset Bounds = <0,0,157,39>;
-    preset String = "0000";
-    preset Font = Resources::FontMedium;
-  }
-
-  $rect <20,20,160,60>
-  object Core::VerticalList VerticalList
-  {
-    preset Bounds = <0,78,315,318>;
-    preset OnLoadItem = OnLoadItem;
-    preset ItemHeight = 40;
-    preset NoOfItems = 6;
-    preset ItemClass = Clock::WeekItem;
-  }
-
-  // This method is called by 'VerticalList' every time the list loads or updates \
-  // an item.
-  $rect <400,50,600,90>
-  slot OnLoadItem
-  {
-    /*
-
-      Hint:
-
-      - The code below demonstrates a simple usage of the list component.
-
-      - The list component creates and manages automatically view item instances of
-        the class specified in its property 'ItemClass'. In this example it is the
-        class 'Views::Text'.
-
-      - When you change the 'ItemClass' property you will also need to replace
-        accordingly all 'Views::Text' occurrences in the below code.
-
-      - You will also need to adapt the initialization of the 'itemView'.
-
-    */
-
-    // Get the number of the item to load. The list component takes care of the
-    // creation of the corresponding item view. Just access it ...
-    var int32       itemNo   = VerticalList.Item;
-    var Views::Text itemView = (Views::Text)VerticalList.View;
-
-    // The implementation of this slot method does not match the item class
-    // specified in the associated list component. Or the slot method is not
-    // called in context of the OnLoadItem list operation. 
-    if ( itemView == null )
-      return;
-
-    // Configure the item view ...
-    itemView.String = "Item #" + string( itemNo );
-    itemView.Font   = Resources::FontMedium;
-    itemView.Color  = #FFFFFFFF;
-
-    // Ensure that the item has correct size. The position of the item will be
-    // managed by the list component.
-    itemView.Bounds.size = point( VerticalList.Bounds.w, VerticalList.ItemHeight );
-  }
-
-  $rect <400,110,600,150>
-  method void LoadMonth( arg int32 offset, arg int32 currentMonth, arg int32 currentYear )
-  {
-    var int32 month=currentMonth + offset;
-    var int32 addedYears;
-
-    if(month>12)
-    {
-      addedYears=int32(float(offset + currentMonth)/12.0);
-      trace offset;
-      trace month;
-      trace int32(float(offset)/12.0 +1.0);
-      month=month-addedYears*12;
-      trace addedYears;
-    }
-    if(month<1)
-    {
-      month=12+month;
-    }
-
-    var int32 year=currentYear + addedYears;
-
-    MonthText.String=Clock::Time.getMonthName( month, true);
-    YearText.String=year;
-  }
-
-  $rect <20,20,160,60>
-  object Views::Text MonthText
-  {
-    preset Bounds = <158,0,315,39>;
-    preset String = "0000";
-    preset Font = Resources::FontMedium;
-  }
-}
-
 // This class implements the Clock::ListBox widget. This widget is intended to display \
 // a list of options and permit the user to select the desired option. Selecting \
 // the option sends a signal to the slot method stored in the property @OnSelect.
@@ -4044,31 +3950,32 @@ $rect <80,610,280,650>
 $output false
 class MonthList : Templates::List
 {
-  $rect <690,-10,890,30>
+  $rect <980,-30,1180,10>
   inherited method Init()
   {
-    CurrentTime=Clock::Time.CurrentTime;
-    CurrentTime.Month=1;
+    CurrentTime= Clock::Time.CurrentTime;
+    CurrentTime.Day=1;
   }
 
-  $rect <450,40,650,80>
-  inherited property Bounds = <0,0,315,330>;
+  $rect <779,20,979,60>
+  inherited property Bounds = <0,0,315,331>;
 
   $rect <20,20,160,60>
   object Core::VerticalList VerticalList
   {
-    preset Bounds = <0,6,315,324>;
+    preset Bounds = <3,91,315,331>;
     preset OnLoadItem = OnLoadItem;
-    preset SlideHandler = SlideTouchHandler;
-    preset ScrollOffset = -381918;
-    preset ItemHeight = 318;
-    preset NoOfItems = 2401;
-    preset ItemClass = Clock::MonthItem;
+    preset Endless = false;
+    preset SlideHandler = null;
+    preset ScrollOffset = 0;
+    preset ItemHeight = 40;
+    preset NoOfItems = 6;
+    preset ItemClass = Clock::WeekItem;
   }
 
   // This method is called by 'VerticalList1' every time the list loads or updates \
   // an item.
-  $rect <450,-10,650,30>
+  $rect <779,-30,979,10>
   slot OnLoadItem
   {
     /*
@@ -4091,7 +3998,7 @@ class MonthList : Templates::List
     // Get the number of the item to load. The list component takes care of the
     // creation of the corresponding item view. Just access it ...
     var int32       itemNo   = VerticalList.Item;
-    var Clock::MonthItem itemView = (Clock::MonthItem)VerticalList.View;
+    var Clock::WeekItem itemView = (Clock::WeekItem)VerticalList.View;
 
     // The implementation of this slot method does not match the item class
     // specified in the associated list component. Or the slot method is not
@@ -4099,27 +4006,18 @@ class MonthList : Templates::List
     if ( itemView == null )
       return;
 
-    // Configure the item view ...
-    itemView.LoadMonth( itemNo - 1201, CurrentTime.Month, CurrentTime.Year );
-
+    // Configure the item view ...                                                     
+    itemView.FillButtons(FitToDayOfWeek(CurrentTime).Add( Clock::TimeSpan.Initialize2( 7*itemNo,0,0,0 )));
+    itemView.Month=CurrentTime.Month;
     // Ensure that the item has correct size. The position of the item will be
     // managed by the list component.
     itemView.Bounds.size = point( VerticalList.Bounds.w, VerticalList.ItemHeight );
   }
 
-  $rect <20,20,160,60>
-  object Core::SlideTouchHandler SlideTouchHandler
-  {
-    preset Bounds = <0,6,315,323>;
-    preset Offset = <0,0>;
-    preset SnapNext = <0,318>;
-    preset SlideHorz = false;
-  }
-
-  $rect <450,99,650,139>
+  $rect <779,79,979,119>
   property Core::Time CurrentTime;
 
-  $rect <450,139,650,179>
+  $rect <779,119,979,159>
   onset CurrentTime
   {
     // The value doesn't change - nothing to do.
@@ -4129,14 +4027,233 @@ class MonthList : Templates::List
     // Remember the property's new value.
     pure CurrentTime = value;
 
+    Month=CurrentTime.Month;
+    Year=CurrentTime.Year;
+
+    VerticalList.InvalidateItems( 0, 5 );
     // TO DO:
     // 
     // Now you can handle the alternation of the property.
   }
 
-  $rect <450,179,650,219>
+  $rect <779,159,979,199>
   onget CurrentTime
   {
     return pure CurrentTime;
   }
+
+  $rect <20,20,160,60>
+  object Views::Text YearText
+  {
+    preset Bounds = <3,44,159,91>;
+    preset String = "Text";
+    preset Font = Clock::SmallerSecondFont;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Text MonthText
+  {
+    preset Bounds = <159,44,315,91>;
+    preset String = "Text";
+    preset Font = Clock::SmallerSecondFont;
+  }
+
+  $rect <980,80,1180,120>
+  method Core::Time FitToDayOfWeek( arg Core::Time time )
+  {
+    return time.Subtract( Clock::TimeSpan.Initialize2( time.DayOfWeek, 0, 0, 0 ) );
+  }
+
+  $rect <20,20,160,60>
+  object Core::SimpleTouchHandler Next
+  {
+    preset Point4 = <159,0>;
+    preset Point3 = <315,0>;
+    preset Point2 = <315,44>;
+    preset Point1 = <159,44>;
+    preset OnPress = OnNext;
+  }
+
+  $rect <790,250,990,290>
+  slot OnNext
+  {
+    Month++;
+    VerticalList.InvalidateItems( 0, 5 );
+  }
+
+  $rect <1180,80,1380,120>
+  property int32 Month;
+
+  $rect <1180,120,1380,160>
+  onset Month
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure Month == value )
+      return;
+
+    // Remember the property's new value.
+
+    pure Month = value;
+    if(Month>12) 
+    {
+      Month=1;
+      Year++;
+    }
+    if(Month<1)
+    {
+      Month=12;
+      Year--;
+    }
+    CurrentTime.Month=Month;
+    MonthText.String=Clock::Time.getMonthName(Month,true);
+
+    // TO DO:
+    // 
+    // Now you can handle the alternation of the property.
+  }
+
+  $rect <1180,160,1380,200>
+  onget Month
+  {
+    return pure Month;
+  }
+
+  $rect <1390,80,1590,120>
+  property int32 Year;
+
+  $rect <1390,120,1590,160>
+  onset Year
+  {
+    // The value doesn't change - nothing to do.
+    if ( pure Year == value )
+      return;
+
+    // Remember the property's new value.
+    pure Year = value;
+    YearText.String=string(Year);
+    CurrentTime.Year=Year;
+    // TO DO:
+    // 
+    // Now you can handle the alternation of the property.
+  }
+
+  $rect <1390,160,1590,200>
+  onget Year
+  {
+    return pure Year;
+  }
+
+  $rect <20,20,160,60>
+  object Core::SimpleTouchHandler Prev
+  {
+    preset Point4 = <3,0>;
+    preset Point3 = <159,0>;
+    preset Point2 = <159,44>;
+    preset Point1 = <3,44>;
+    preset OnPress = OnPrev;
+  }
+
+  $rect <790,290,990,330>
+  slot OnPrev
+  {
+    Month--;
+    VerticalList.InvalidateItems( 0, 5 );
+  }
+}
+
+$rect <-119,650,71,690>
+$output false
+autoobject Core::TimeSpan TimeSpan;
+
+// The definition Core::ViewState determines the set of possible states, a Core::View \
+// can assume at its lifetime. These states are used internally by all GUI components. \
+// They determine whether components are visible, able to react to user events, etc. 
+$rect <-119,370,71,410>
+$output false
+set ViewState
+{
+  // The state 'Visible' determines the visibility of the corresponding view. Invisible \
+  // views will not appear on the screen. Whether a view is really visible depends \
+  // on the visibility of its owner and the position of the view within the owners \
+  // boundary area.
+  $rect <10,10,190,50>
+  item Visible;
+
+  // The state 'AlphaBlended' determines the drawing mode for the corresponding view. \
+  // Views with disabled alpha-blending will override the affected screen areas. \
+  // If this mode is enabled, the aspect of the view is combined with the origin \
+  // screen content by alpha-blending.
+  $rect <190,10,370,50>
+  item AlphaBlended;
+
+  // The state 'Focusable' determines whether the view is able to become focused \
+  // and react to keyboard events. Non focusable views can not receive keyboard events.
+  $rect <10,50,190,90>
+  item Focusable;
+
+  // The state 'Touchable' determines whether the view is able to receive cursor \
+  // events. Non touchable views can not react to user touch screen taps.
+  $rect <190,50,370,90>
+  item Touchable;
+
+  // The state 'Enabled' determines whether the view is able to react to user input \
+  // events. Disabled views will never receive these events. Whether the can really \
+  // react to events depends additionally on its other states @Focusable and @Touchable.
+  $rect <370,50,550,90>
+  item Enabled;
+
+  // The state 'Selected' determines whether the view is currently selected within \
+  // its owner. The selected view is stored in its owner Focus property.
+  $rect <10,90,190,130>
+  item Selected;
+
+  // The state 'Focused' determines whether the view belongs to the focus path and \
+  // thus is able to receive keyboard events.
+  $rect <190,90,370,130>
+  item Focused;
+
+  // The state 'Modal' determines whether the view is currently modal.
+  $rect <370,90,550,130>
+  item Modal;
+
+  $rect <10,130,190,170>
+  item FastReshape;
+
+  $rect <190,130,370,170>
+  item IsOutline;
+
+  // The state 'Embedded' determines how the view should appear and behave within \
+  // its superior owner. If this state is active, the affected view will be embedded \
+  // (limited) to the boundary of a preceding Core::Outline sibling view. This is \
+  // as if the view had been embedded within this outline. If this state is not active, \
+  // the view is considered as a regular view of its owner - it doesn't belong to \
+  // any outline.
+  $rect <370,130,550,170>
+  item Embedded;
+
+  $rect <10,170,190,210>
+  item RequestLayout;
+
+  $rect <190,170,370,210>
+  item UpdateLayout;
+
+  $rect <370,170,550,210>
+  item UpdatingLayout;
+
+  $rect <10,210,190,250>
+  item PendingLayout;
+
+  $rect <190,210,370,250>
+  item PendingViewState;
+
+  // The state 'Dialog' is set for every GUI component being explicitly presented \
+  // by using the method Core::Group.PresentDialog() or Core::Group.SwitchToDialog().
+  $rect <550,90,730,130>
+  item Dialog;
+
+  $rect <10,250,190,290>
+  item PendingFader;
+
+  $rect <190,250,370,290>
+  item RunningFader;
 }
