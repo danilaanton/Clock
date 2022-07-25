@@ -4,9 +4,9 @@ attr active = Clock::MonthList;
 attr callStackMonitor_Show = false;
 attr codeColSelect = false;
 attr codeFirstPos = <0,0>;
-attr codeInspector = Clock::MonthList.ItemSelected;
-attr codeSelEnd = <23,1>;
-attr codeSelStart = <23,1>;
+attr codeInspector = Clock::MonthList.OnPrev;
+attr codeSelEnd = <25,0>;
+attr codeSelStart = <25,0>;
 attr connectInspectors = false;
 attr debug_TrackUpdates = false;
 attr extractDoc_ClassOverview = true;
@@ -43,7 +43,7 @@ view Project
 view unit Clock
 {
   attr enableWireMode = false;
-  attr scrollTo = <-121,235>;
+  attr scrollTo = <-317,19>;
   attr zoom = 0.75;
 }
 
@@ -61,57 +61,52 @@ view unit Resources
   attr zoom = 1.0;
 }
 
-view class Clock::DateDayButton
-{
-  attr codeColSelect = false;
-  attr codeFirstPos = <0,0>;
-  attr codeInspector = OnSetSelectable;
-  attr codeSelEnd = <35,13>;
-  attr codeSelStart = <35,13>;
-  attr enableWireMode = false;
-  attr scrollTo = <-75,-47>;
-  attr zoom = 1.0;
-}
-
 view class Clock::WeekItem
 {
   attr codeColSelect = false;
   attr codeFirstPos = <0,0>;
-  attr codeInspector = ItemSelected;
-  attr codeSelEnd = <24,1>;
-  attr codeSelStart = <24,1>;
+  attr codeInspector = FillButtons;
+  attr codeSelEnd = <29,6>;
+  attr codeSelStart = <29,6>;
   attr enableWireMode = false;
-  attr scrollTo = <762,-61>;
-  attr zoom = 1.0;
-}
-
-view unit Core
-{
-  attr enableWireMode = false;
-  attr scrollTo = <-7,362>;
-  attr zoom = 1.0;
+  attr scrollTo = <-183,-143>;
+  attr zoom = 0.5;
 }
 
 view class Clock::MonthList
 {
   attr codeColSelect = false;
   attr codeFirstPos = <0,0>;
-  attr codeInspector = ItemSelected;
-  attr codeSelEnd = <23,1>;
-  attr codeSelStart = <23,1>;
+  attr codeInspector = OnPrev;
+  attr codeSelEnd = <25,0>;
+  attr codeSelStart = <25,0>;
   attr enableWireMode = true;
-  attr scrollTo = <481,-52>;
+  attr scrollTo = <337,-64>;
   attr zoom = 0.75;
 }
 
-view class Clock::TimePicker
+view class Clock::DateDayButton
 {
   attr codeColSelect = false;
   attr codeFirstPos = <0,0>;
-  attr codeInspector = UpdateCenterFont;
-  attr codeSelEnd = <68,7>;
-  attr codeSelStart = <68,7>;
+  attr codeInspector = OnSetDate;
+  attr codeSelEnd = <0,6>;
+  attr codeSelStart = <0,6>;
   attr enableWireMode = false;
-  attr scrollTo = <418,-7>;
+  attr scrollTo = <-60,-138>;
+  attr zoom = 1.0;
+}
+
+view class Clock::CalendarScreen
+{
+  attr enableWireMode = false;
+  attr scrollTo = <-7,-7>;
+  attr zoom = 1.0;
+}
+
+view class Core::Time
+{
+  attr enableWireMode = false;
+  attr scrollTo = <-7,408>;
   attr zoom = 1.0;
 }
