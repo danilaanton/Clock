@@ -1,12 +1,12 @@
 $version 1.0
 
-attr active = Clock::Event;
+attr active = Clock::RunningEvents;
 attr callStackMonitor_Show = false;
 attr codeColSelect = false;
-attr codeFirstPos = <0,0>;
-attr codeInspector = Clock::Event.OnSetSnooze;
-attr codeSelEnd = <49,7>;
-attr codeSelStart = <49,7>;
+attr codeFirstPos = <0,40>;
+attr codeInspector = Clock::RunningEvents.OnLoadVerticalList;
+attr codeSelEnd = <39,51>;
+attr codeSelStart = <39,51>;
 attr connectInspectors = false;
 attr debug_TrackUpdates = false;
 attr extractDoc_ClassOverview = true;
@@ -24,7 +24,7 @@ attr language = Default;
 attr profile = Profile;
 attr profilerMonitor_Show = false;
 attr search_CaseSensitive = true;
-attr search_History = SetTime,PointEffect,parkingX,ParkingX,RubberBandScrolling;
+attr search_History = Snooze,UpdateEvent,InvalidateViewState,invalidateviewstate,SetTime,PointEffect,parkingX,ParkingX,RubberBandScrolling;
 attr search_IgnoreDescription = false;
 attr search_IgnoreMosaic = false;
 attr search_LimitToComposer = true;
@@ -48,7 +48,7 @@ view unit Clock
   attr codeSelEnd = <50,12>;
   attr codeSelStart = <50,12>;
   attr enableWireMode = false;
-  attr scrollTo = <-252,360>;
+  attr scrollTo = <-252,476>;
   attr zoom = 0.75;
 }
 
@@ -93,10 +93,10 @@ view class Clock::TimerScreen
 view class Clock::Base
 {
   attr codeColSelect = false;
-  attr codeFirstPos = <0,0>;
-  attr codeInspector = OnButton1;
-  attr codeSelEnd = <2,4>;
-  attr codeSelStart = <2,4>;
+  attr codeFirstPos = <0,5>;
+  attr codeInspector = onEvent;
+  attr codeSelEnd = <9,22>;
+  attr codeSelStart = <9,22>;
   attr enableWireMode = false;
   attr scrollTo = <-7,503>;
   attr zoom = 1.0;
@@ -107,58 +107,34 @@ view class Clock::Event
   attr codeColSelect = false;
   attr codeFirstPos = <0,0>;
   attr codeInspector = OnSetSnooze;
-  attr codeSelEnd = <49,7>;
-  attr codeSelStart = <49,7>;
+  attr codeSelEnd = <0,3>;
+  attr codeSelStart = <0,3>;
   attr enableWireMode = false;
-  attr scrollTo = <97,53>;
-  attr zoom = 1.0;
-}
-
-view class Clock::Alert
-{
-  attr codeColSelect = false;
-  attr codeFirstPos = <0,0>;
-  attr codeInspector = OnButton1Press;
-  attr codeSelEnd = <0,0>;
-  attr codeSelStart = <0,0>;
-  attr enableWireMode = false;
-  attr scrollTo = <298,58>;
+  attr scrollTo = <149,53>;
   attr zoom = 1.0;
 }
 
 view class Clock::RunningEvents
 {
   attr codeColSelect = false;
-  attr codeFirstPos = <0,30>;
+  attr codeFirstPos = <0,40>;
   attr codeInspector = OnLoadVerticalList;
-  attr codeSelEnd = <51,33>;
-  attr codeSelStart = <51,33>;
+  attr codeSelEnd = <39,51>;
+  attr codeSelStart = <39,51>;
   attr enableWireMode = false;
-  attr scrollTo = <-7,601>;
+  attr scrollTo = <-7,13>;
   attr zoom = 1.0;
 }
 
 view class Clock::DeviceClass
 {
   attr codeColSelect = false;
-  attr codeFirstPos = <0,3>;
-  attr codeInspector = TimeProgress;
-  attr codeSelEnd = <33,9>;
-  attr codeSelStart = <33,9>;
-  attr enableWireMode = false;
-  attr scrollTo = <-7,-7>;
-  attr zoom = 1.0;
-}
-
-view vclass Clock::DeviceSimulation
-{
-  attr codeColSelect = false;
   attr codeFirstPos = <0,0>;
-  attr codeInspector = AddEvent;
-  attr codeSelEnd = <0,0>;
-  attr codeSelStart = <0,0>;
+  attr codeInspector = UpdateEvent;
+  attr codeSelEnd = <0,1>;
+  attr codeSelStart = <0,1>;
   attr enableWireMode = false;
-  attr scrollTo = <-7,-7>;
+  attr scrollTo = <-7,236>;
   attr zoom = 1.0;
 }
 
@@ -199,6 +175,39 @@ view class Clock::TimePicker
 }
 
 view enum Clock::EventType
+{
+  attr enableWireMode = false;
+  attr scrollTo = <-7,-7>;
+  attr zoom = 1.0;
+}
+
+view unit Views
+{
+  attr enableWireMode = false;
+  attr scrollTo = <-7,414>;
+  attr zoom = 1.0;
+}
+
+view unit Core
+{
+  attr enableWireMode = false;
+  attr scrollTo = <-7,-7>;
+  attr zoom = 1.0;
+}
+
+view class Core::VerticalList
+{
+  attr codeColSelect = false;
+  attr codeFirstPos = <0,12>;
+  attr codeInspector = OnSetItemHeight;
+  attr codeSelEnd = <0,17>;
+  attr codeSelStart = <0,17>;
+  attr enableWireMode = false;
+  attr scrollTo = <-1,994>;
+  attr zoom = 1.0;
+}
+
+view class Clock::FunctionalitiesButton
 {
   attr enableWireMode = false;
   attr scrollTo = <-7,-7>;

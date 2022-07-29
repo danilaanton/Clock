@@ -78,8 +78,17 @@ class Base : Core::Group
       default:;
     }
     alert.OnButton1=OnButton1;
-    alert.OnIgnored=OnButton2;
-    alert.OnButton2=OnButton2;
+
+    if(event.Snooze<600)
+    {
+      alert.OnIgnored=OnButton2;
+      alert.OnButton2=OnButton2;
+    }
+    else
+    {
+      alert.OnIgnored=OnButton1;
+      alert.PushButton2.Enabled=false;
+    }
     this.PresentDialog( alert, Effects::SlideDownCentered, null, null, null, null, null, null, null, false );
   }
 
@@ -87,11 +96,10 @@ class Base : Core::Group
   slot OnButton1
   {
     var Clock::Alert alert= (Clock::Alert)sender;
-    var Clock::Event event=alert.Sender;
-    if(event!=null) 
+    if(Clock::Device.GetEvent( alert.Index )!=null) 
     {
-      event.Snooze=0;
-      event.FindNextScheduled();
+      alert.Sender.Snooze=0;
+      Clock::Device.UpdateEvent( alert.Index );
     }
     this.DismissDialog( (Clock::Alert)sender, null, null, null, null, null, false );
   }
@@ -564,6 +572,26 @@ class DeviceClass : Templates::DeviceClass
 
   $rect <470,240,670,280>
   object Core::SystemEvent EventTriggered;
+
+  $rect <10,460,210,500>
+  method bool UpdateEvent( arg int32 index )
+  {
+    var Clock::Event event=Clock::Device.GetEvent( index );
+    var int32 currentDayOfWeek=Clock::Time.Initialize( event.TriggerTime ).DayOfWeek;
+    var int64 currentTime=Clock::Time.CurrentTime.Time;
+    var int64 i=event.TriggerTime ;
+    do
+    {
+      if(event.ScheduledDays[(currentDayOfWeek+int32(i-event.TriggerTime )/86400)%7]==true && i>currentTime) 
+       {
+          event.TriggerTime=i;
+          Clock::Device.EventChanged.Trigger( null, null );
+          return true; 
+       }
+      i+=86400;
+    }while(i<=event.TriggerTime+7*86400);
+    return false;
+  }
 }
 
 $rect <690,340,890,380>
@@ -2883,17 +2911,19 @@ class AlarmScreen : Core::Group
     event.Type=Clock::EventType.Alarm;
     event.TriggerTime=currentTime-currentTime%86400+TimePicker.Hour*3600+TimePicker.Minute*60+TimePicker.Second;
 
-    var int32 index;
-    for(index=0;index<7;index++) 
-    {
-      event.ScheduledDays[index]=WeekButtonList.SelectedDays[index];
+
+    if(Clock::Device.AddEvent( event ))
+    {      
+      var int32 index;
+      for(index=0;index<7;index++) 
+      {
+        event.ScheduledDays[index]=WeekButtonList.SelectedDays[index];
+      }
+      event.IsScheduled=Clock::Device.UpdateEvent( 0 );
+      if(!event.IsScheduled && event.TriggerTime<=currentTime) 
+        event.TriggerTime+=86400;
     }
 
-    event.IsScheduled=event.FindNextScheduled();
-    if(!event.IsScheduled && event.TriggerTime<=currentTime) 
-      event.TriggerTime+=86400;
-
-    Clock::Device.AddEvent( event );
 
   }
 
@@ -4674,6 +4704,8 @@ class RunningEvents : Core::Group
     default:;
     }
 
+    if(event.Snooze>0) itemView.Caption+=" [Reminder]";
+
     // Ensure that the item has correct size. The position of the item will be
     // managed by the list component.
     itemView.Bounds.size = point( VerticalList.Bounds.w, VerticalList.ItemHeight );
@@ -4846,25 +4878,6 @@ class Event
     return false;
   }
 
-  $rect <180,290,380,330>
-  method bool FindNextScheduled()
-  {
-    var int32 currentDayOfWeek=Clock::Time.Initialize( TriggerTime ).DayOfWeek;
-    var int64 currentTime=Clock::Time.CurrentTime.Time;
-    var int64 i=TriggerTime;
-    do
-    {
-      if(ScheduledDays[(currentDayOfWeek+int32(i-TriggerTime)/86400)%7]==true && i>currentTime) 
-       {
-          TriggerTime=i;
-          Clock::Device.EventChanged.Trigger( null, null );
-          return true; 
-       }
-      i+=86400;
-    }while(i<=TriggerTime+7*86400);
-    return false;
-  }
-
   $rect <780,70,980,110>
   property int64 Snooze = 0;
 
@@ -4874,6 +4887,7 @@ class Event
     // The value doesn't change - nothing to do.
     if ( pure Snooze == value )
       return;
+
 
     // Remember the property's new value.
     pure Snooze = value;
@@ -5394,51 +5408,6 @@ class FunctionalitiesButton : Templates::PushButton
   $rect <450,130,650,170>
   property slot OnPress = null;
 
-  $rect <20,20,160,60>
-  object Views::FillPath FillPath
-  {
-    preset Bounds = <0,0,100,100>;
-    preset Color = #0F1E35FF;
-    preset Offset = <50,50>;
-    preset FillRule = Graphics::FillRule.EvenOdd;
-    preset Path = ArcPath;
-  }
-
-  $rect <480,230,680,270>
-  object Graphics::ArcPath ArcPath
-  {
-    preset EndAngle = 360;
-    preset Radius = 50;
-    preset Style = Graphics::ArcStyle.Pie;
-  }
-
-  $rect <480,270,680,310>
-  object Graphics::ArcPath ArcPath1
-  {
-    preset EndAngle = 360;
-    preset InnerRadius = 30;
-    preset Radius = 49;
-    preset Style = Graphics::ArcStyle.Pie;
-  }
-
-  $rect <20,20,160,60>
-  object Views::FillPath FillPath1
-  {
-    preset Bounds = <0,0,100,100>;
-    preset ColorBR = #0F1E35FF;
-    preset Color = #FFFFFFFF;
-    preset Offset = <50,50>;
-    preset FillRule = Graphics::FillRule.EvenOdd;
-    preset Path = ArcPath1;
-  }
-
-  $rect <20,20,160,60>
-  object Views::Image Image
-  {
-    preset Bounds = <0,2,100,100>;
-    preset Bitmap = Resources::DefaultBitmap;
-  }
-
   $rect <450,10,650,50>
   property int32 FrameNumber = 0;
 
@@ -5477,33 +5446,11 @@ class FunctionalitiesButton : Templates::PushButton
     // Now you can handle the alternation of the property.
   }
 
-  $rect <20,20,160,60>
-  object Views::FillPath FillPath2
-  {
-    preset Bounds = <0,0,100,100>;
-    preset Color = #0000003A;
-    preset Offset = <50,50>;
-    preset FillRule = Graphics::FillRule.EvenOdd;
-    preset Path = ArcPath;
-    preset Visible = false;
-  }
-
   // The property 'OnActivate' can refer to a slot method, which will receive a signal \
   // as soon as the user has activated the button. Thereupon the method's logic will \
   // be executed.
   $rect <250,130,450,170>
   property slot OnRelease = null;
-
-  $rect <20,20,160,60>
-  object Core::SimpleTouchHandler SimpleTouchHandler
-  {
-    preset Point4 = <11,11>;
-    preset Point3 = <91,11>;
-    preset Point2 = <91,91>;
-    preset Point1 = <11,91>;
-    preset OnRelease = onReleaseTouch;
-    preset OnPress = onPressTouch;
-  }
 
   $rect <250,10,450,50>
   property color IconColor = #FFFFFFFF;
@@ -5563,6 +5510,73 @@ class FunctionalitiesButton : Templates::PushButton
     // TO DO:
     // 
     // Now you can handle the alternation of the property.
+  }
+
+  $rect <20,20,160,60>
+  object Views::FillPath FillPath
+  {
+    preset Bounds = <0,0,100,100>;
+    preset Color = #0F1E35FF;
+    preset Offset = <50,50>;
+    preset FillRule = Graphics::FillRule.EvenOdd;
+    preset Path = ArcPath;
+  }
+
+  $rect <480,230,680,270>
+  object Graphics::ArcPath ArcPath
+  {
+    preset EndAngle = 360;
+    preset Radius = 50;
+    preset Style = Graphics::ArcStyle.Pie;
+  }
+
+  $rect <480,270,680,310>
+  object Graphics::ArcPath ArcPath1
+  {
+    preset EndAngle = 360;
+    preset InnerRadius = 30;
+    preset Radius = 49;
+    preset Style = Graphics::ArcStyle.Pie;
+  }
+
+  $rect <20,20,160,60>
+  object Views::FillPath FillPath1
+  {
+    preset Bounds = <0,0,100,100>;
+    preset ColorBR = #0F1E35FF;
+    preset Color = #FFFFFFFF;
+    preset Offset = <50,50>;
+    preset FillRule = Graphics::FillRule.EvenOdd;
+    preset Path = ArcPath1;
+  }
+
+  $rect <20,20,160,60>
+  object Views::Image Image
+  {
+    preset Bounds = <0,2,100,100>;
+    preset Bitmap = Resources::DefaultBitmap;
+  }
+
+  $rect <20,20,160,60>
+  object Views::FillPath FillPath2
+  {
+    preset Bounds = <0,0,100,100>;
+    preset Color = #0000003A;
+    preset Offset = <50,50>;
+    preset FillRule = Graphics::FillRule.EvenOdd;
+    preset Path = ArcPath;
+    preset Visible = false;
+  }
+
+  $rect <20,20,160,60>
+  object Core::SimpleTouchHandler SimpleTouchHandler
+  {
+    preset Point4 = <11,11>;
+    preset Point3 = <91,11>;
+    preset Point2 = <91,91>;
+    preset Point1 = <11,91>;
+    preset OnRelease = onReleaseTouch;
+    preset OnPress = onPressTouch;
   }
 }
 
