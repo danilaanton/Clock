@@ -50,7 +50,7 @@ unit Application
 // Mosaic Framework
 note group Note1
 {
-  attr Bounds = <20,20,260,290>;
+  attr Bounds = <20,20,260,360>;
 }
 
 // Profile Configuration
@@ -106,7 +106,7 @@ note group Note5
 // https://doc.embedded-wizard.de
 note legend Note
 {
-  attr Bounds = <20,300,760,440>;
+  attr Bounds = <20,380,760,520>;
 }
 
 // This is a profile member for the project. This profile controls the code generation \
