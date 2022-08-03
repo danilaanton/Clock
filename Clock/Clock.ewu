@@ -3332,6 +3332,9 @@ class WeekButtonList : Templates::List
   {
     var Clock::WeekButton selectedDay = (Clock::WeekButton)sender;
 
+    if(selectedDay.WeekDay< 0 ||  selectedDay.WeekDay> 6)
+      return;
+
     SelectedDays[selectedDay.WeekDay]=true;
   }
 
@@ -3416,7 +3419,7 @@ class WeekButtonList : Templates::List
 
 // This class implements a 'push button' widget. When the user presses the button, \
 // a signal is sent to the slot method stored in its @OnActivate property.
-$rect <100,510,300,550>
+$rect <100,510,299,550>
 $output false
 class WeekButton : WidgetSet::ToggleButton
 {
@@ -3465,7 +3468,7 @@ class WeekButton : WidgetSet::ToggleButton
   }
 
   $rect <81,90,281,130>
-  property int32 WeekDay = 0;
+  property int32 WeekDay;
 
   $rect <81,130,281,170>
   onset WeekDay
@@ -3574,7 +3577,6 @@ class WeekItem : Templates::ListItem
   $rect <360,140,560,180>
   slot OnLoadItem
   {
-
     var int32        itemNo   = HorizontalList.Item;
     var Clock::DayButton itemView = (Clock::DayButton)HorizontalList.View;
      
@@ -3659,7 +3661,7 @@ class DayButton : Templates::PushButton
       
       var Core::Time current=Clock::Time.CurrentTime;
 
-      if(Date.Day==current.Day &&  Date.Month==current.Month && Date.Year==current.Year) 
+      if(Date.Time/86400==current.Time/86400) 
         Caption.Color=#67DCFFFF;
       else 
         Caption.Color=#FAE9E0FF;
@@ -4299,10 +4301,10 @@ class EventItemComponent : Core::Group
   $rect <0,159,200,199>
   inherited property Visible = true;
 
-  $rect <0,359,200,399>
+  $rect <0,369,200,409>
   property Resources::Bitmap Icon;
 
-  $rect <0,399,200,439>
+  $rect <0,409,200,449>
   onset Icon
   {
     // The value doesn't change - nothing to do.
@@ -4318,16 +4320,16 @@ class EventItemComponent : Core::Group
     // Now you can handle the alternation of the property.
   }
 
-  $rect <0,439,200,479>
+  $rect <0,449,200,489>
   onget Icon
   {
     return pure Icon;
   }
 
-  $rect <210,359,410,399>
+  $rect <210,369,410,409>
   property string Caption;
 
-  $rect <210,399,410,439>
+  $rect <210,409,410,449>
   onset Caption
   {
     // The value doesn't change - nothing to do.
@@ -4340,7 +4342,7 @@ class EventItemComponent : Core::Group
     Text.String=value;
   }
 
-  $rect <210,439,410,479>
+  $rect <210,449,410,489>
   onget Caption
   {
     return pure Caption;
@@ -4420,10 +4422,10 @@ class EventItemComponent : Core::Group
     preset Embedded = true;
   }
 
-  $rect <420,359,620,399>
+  $rect <420,369,620,409>
   property int32 ImageFrame;
 
-  $rect <420,399,620,439>
+  $rect <420,409,620,449>
   onset ImageFrame
   {
     // The value doesn't change - nothing to do.
@@ -4440,7 +4442,7 @@ class EventItemComponent : Core::Group
     // Now you can handle the alternation of the property.
   }
 
-  $rect <420,439,620,479>
+  $rect <420,449,620,489>
   onget ImageFrame
   {
     return pure ImageFrame;
@@ -4484,7 +4486,7 @@ class EventItemComponent : Core::Group
     preset RubberBandScrolling = true;
   }
 
-  $rect <10,579,210,619>
+  $rect <10,589,210,629>
   slot OnEndSlider
   {
     if(SlideTouchHandler.Offset.x>SlideTouchHandler.Bounds.w/2)
@@ -4500,7 +4502,7 @@ class EventItemComponent : Core::Group
     preset Color = #4FA8C300;
   }
 
-  $rect <10,540,210,580>
+  $rect <10,550,210,590>
   slot OnSlide
   {
     Rectangle.Bounds.w=SlideTouchHandler.Offset.x;
@@ -4523,7 +4525,7 @@ class EventItemComponent : Core::Group
     preset Opacity = 0;
   }
 
-  $rect <0,650,200,690>
+  $rect <0,660,200,700>
   method void Reset()
   {
     SlideTouchHandler.Offset=<0,0>;
@@ -4537,7 +4539,7 @@ class EventItemComponent : Core::Group
   // Touch Handler Events
   note group Note
   {
-    attr Bounds = <0,500,220,630>;
+    attr Bounds = <0,510,220,640>;
   }
 }
 
@@ -4640,7 +4642,6 @@ class RunningEvents : Core::Group
   $rect <710,230,910,270>
   slot OnLoadHorizontalList
   {
-
     var int32        itemNo   = HorizontalList.Item;
     var Views::Image itemView = (Views::Image)HorizontalList.View;
 
@@ -4689,7 +4690,6 @@ class RunningEvents : Core::Group
   $rect <710,270,910,310>
   slot OnLoadVerticalList
   {
-
     var int32       itemNo   = VerticalList.Item;
     var Clock::EventItemComponent itemView = (Clock::EventItemComponent)VerticalList.View;
 
@@ -4702,7 +4702,7 @@ class RunningEvents : Core::Group
 
     itemView.Reset();
     itemView.Icon=Clock::IconsLarge;
-    itemView.TriggerTime=event.TriggerTime;
+    itemView.TriggerTime=event.TriggerTime+event.Snooze;
     itemView.Index=itemNo;                
 
     switch(event.Type)
