@@ -586,17 +586,24 @@ class DeviceClass : Templates::DeviceClass
   method Clock::Event GetEvent( arg int32 index )
   {
     /* The template just returns the given argument... */
+    index;
     return null;
   }
 
   $rect <30,199,230,239>
   method bool AddEvent( arg Clock::Event event )
   {
+    // ToDo
+    event;
+    return true;
   }
 
   $rect <30,239,230,279>
   method bool RemoveEvent( arg int32 index )
   {
+    // ToDo
+    index;
+    return true;
   }
 
   $rect <480,199,680,239>
@@ -605,6 +612,9 @@ class DeviceClass : Templates::DeviceClass
   $rect <30,279,230,319>
   method bool UpdateEvent( arg int32 index )
   {
+    // ToDo
+    index;
+    return true;
   }
 
   // Event Access and Modification
@@ -2256,14 +2266,13 @@ class ChronometerScreen : Core::Group
   {
     var Views::Text txt=new Views::Text;
 
-    txt.Embedded=true;
-    txt.Bounds=<0,0,320,50>;
-    txt.Font=Clock::LargeFont;
-    txt.String=Stopwatch.HourText.String+":"+ Stopwatch.MinuteText.String+":"+Stopwatch.SecondText.String+":"+Stopwatch.CentisecondText.String;
+    txt.Embedded = true;
+    txt.Bounds = <0,0,320,50>;
+    txt.Font = Clock::LargeFont;
+    txt.String = Stopwatch.HourText.String + ":" + Stopwatch.MinuteText.String + ":" +Stopwatch.SecondText.String + ":" + Stopwatch.CentisecondText.String;
 
     Add( txt, 0 );
 
-    UpdateOutline();
   }
 
   $rect <20,20,160,60>
@@ -2361,7 +2370,6 @@ class ChronometerScreen : Core::Group
   object Core::Outline Outline
   {
     preset Bounds = <0,110,640,160>;
-    preset OnUpdate = null;
     preset SlideHandler = SlideTouchHandler;
     preset Formation = Core::Formation.LeftToRight;
   }
@@ -2370,7 +2378,7 @@ class ChronometerScreen : Core::Group
   object Core::SlideTouchHandler SlideTouchHandler
   {
     preset Bounds = <0,110,640,160>;
-    preset SnapNext = <0,50>;
+    preset SnapNext = <50,0>;
     preset SlideVert = false;
     preset RubberBandEffectElasticity = 5.0;
   }
@@ -2510,16 +2518,6 @@ class ChronometerScreen : Core::Group
   slot WipeRightSlot
   {
     Owner.SwitchToDialog(new Clock::AlarmScreen, Effects::SlideRightCentered, null, null, null, null, null, null, null, null, false );
-  }
-
-  $rect <670,240,870,280>
-  method void UpdateOutline()
-  {
-    var Core::View view=Outline.GetViewAtIndex( Outline.CountViews()-1 );
-    var Effects::PointEffect pointEffect=new Effects::PointEffect;
-
-    Outline.EnsureVisible( view, true, pointEffect, null );
-
   }
 
   // Button Press Events
@@ -5104,9 +5102,6 @@ class Alert : Templates::Panel
     // ... and update the text displayed in the alert
     PushButton1.Label = value;
 
-    // Changing the label can also affect the width of the alert itself.
-    // Therefore trigger the routine to recalculate the alert size
-    postsignal autoResize;
   }
 
   $rect <899,489,1099,529>
@@ -5376,9 +5371,6 @@ class Alert : Templates::Panel
     // ... and update the text displayed in the alert
     PushButton1.Label = value;
 
-    // Changing the label can also affect the width of the alert itself.
-    // Therefore trigger the routine to recalculate the alert size
-    postsignal autoResize;
   }
 
   // The property 'OnButton1' can store a slot method to signal when the user activates \
