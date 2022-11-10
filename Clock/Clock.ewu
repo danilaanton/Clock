@@ -2273,6 +2273,8 @@ class ChronometerScreen : Core::Group
 
     Add( txt, 0 );
 
+    postsignal UpdateOutline;
+
   }
 
   $rect <20,20,160,60>
@@ -2529,7 +2531,7 @@ class ChronometerScreen : Core::Group
   // Touch Handler Events
   note group Note1
   {
-    attr Bounds = <910,50,1131,220>;
+    attr Bounds = <910,50,1130,220>;
   }
 
   // Time Display
@@ -2548,6 +2550,15 @@ class ChronometerScreen : Core::Group
   note group Note4
   {
     attr Bounds = <670,50,891,220>;
+  }
+
+  $rect <920,230,1120,270>
+  slot UpdateOutline
+  {
+    var Core::View view = Outline.GetViewAtIndex( Outline.CountViews() - 1 );
+    var Effects::PointEffect pointEffect = new Effects::PointEffect;
+
+    Outline.EnsureVisible( view, true, pointEffect, null );
   }
 }
 
