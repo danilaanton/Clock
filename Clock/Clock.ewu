@@ -3558,13 +3558,13 @@ class WeekItem : Templates::ListItem
   $rect <350,200,550,240>
   method void FillButtons( arg Core::Time time )
   {
-    var Core::TimeSpan span=Clock::TimeSpan.Initialize2( 1, 0, 0, 0 );
+    var Core::TimeSpan span = Clock::TimeSpan.Initialize2( 1, 0, 0, 0 );
     var int32 index;
 
-    for(index=0;index<7;index++)
+    for( index=0 ; index < 7 ; index++ )
       { 
         Days[index]=time;
-        time=time.Add(span);  
+        time = time.Add(span);  
       }
 
     HorizontalList.InvalidateItems( 0, 6 );
@@ -3592,8 +3592,8 @@ class WeekItem : Templates::ListItem
     if ( itemView == null )
       return;
 
-    itemView.Date=Days[itemNo];  
-    itemView.OnSelected=ItemSelected;
+    itemView.Date = Days[itemNo];  
+    itemView.OnSelected = ItemSelected;
 
     itemView.Bounds.size = point( HorizontalList.ItemWidth, HorizontalList.Bounds.h );
   }
@@ -3624,15 +3624,15 @@ class WeekItem : Templates::ListItem
   $rect <590,140,790,180>
   slot ItemSelected
   {
-    var Clock::DayButton button=(Clock::DayButton)sender;
+    var Clock::DayButton button= (Clock::DayButton)sender;
 
-    Selected=button.Date;
+    Selected = button;
 
     postsignal OnSelected;
   }
 
-  $rect <1280,10,1480,50>
-  property Core::Time Selected = null;
+  $rect <590,190,790,230>
+  property Clock::DayButton Selected = null;
 
   // List Management
   note group Note
@@ -3645,6 +3645,9 @@ class WeekItem : Templates::ListItem
   {
     attr Bounds = <580,100,800,190>;
   }
+
+  $rect <350,300,550,340>
+  var bool firstInit = true;
 }
 
 // This class implements a 'push button' widget. When the user presses the button, \
@@ -3659,28 +3662,32 @@ class DayButton : Templates::PushButton
   $rect <290,-10,490,30>
   inherited method UpdateViewState()
   {
-    super(aState);
+    super( aState );
 
-    var bool isEnabled  = aState.contains( Core::ViewState[ Enabled ]);
+    var bool isEnabled  = aState.contains( Core::ViewState[ Enabled ] );
 
-    if(isEnabled)
+    if( isEnabled )
     {
       SimpleTouchHandler.Enabled=true;
       Rectangle.Visible=false;
       
       var Core::Time current=Clock::Time.CurrentTime;
+      
+      if ( Date.Time / 86400 == current.Time / 86400 && Caption.Color != #67DCFFFF ) {
+        Caption.Color = #67DCFFFF;
+      }
+      else if ( Date.Time/86400 != current.Time/86400 && Caption.Color != #FAE9E0FF ) { 
+        Caption.Color = #FAE9E0FF;
 
-      if(Date.Time/86400==current.Time/86400) 
-        Caption.Color=#67DCFFFF;
-      else 
-        Caption.Color=#FAE9E0FF;
+      }
     }
     else
     {
       SimpleTouchHandler.Enabled=false;
       Rectangle.Visible=true;
 
-      Caption.Color=#404D6344;
+      if( Caption.Color != #404D6344 )
+        Caption.Color = #404D6344;   
     }
   }
 
@@ -3698,7 +3705,6 @@ class DayButton : Templates::PushButton
     preset Bounds = <-2,0,43,40>;
     preset String = " ";
     preset Font = Clock::SmallFont;
-    preset Color = #FAE9E0FF;
   }
 
   $rect <80,50,280,90>
@@ -3718,6 +3724,8 @@ class DayButton : Templates::PushButton
       Enabled=true;
     else
       Enabled=false;
+
+    InvalidateViewState();
 
   }
 
@@ -3746,8 +3754,8 @@ class DayButton : Templates::PushButton
   $rect <90,230,290,270>
   slot OnPressed
   {
-    Rectangle.Visible=true;
-    postsignal OnSelected;
+    Rectangle.Visible = true;
+
 
   }
 
@@ -3777,7 +3785,8 @@ class DayButton : Templates::PushButton
   $rect <90,270,290,310>
   slot OnReleased
   {
-    Rectangle.Visible=false;
+    Rectangle.Visible = false;
+    postsignal OnSelected;
   }
 }
 
@@ -4097,7 +4106,9 @@ class MonthList : Templates::List
   slot ItemSelected
   {
     var Clock::WeekItem item =(Clock::WeekItem)sender;
-    SelectedDate=item.Selected;
+         
+    SelectedDate = item.Selected.Date;
+
     postsignal OnSelected;
   }
 
@@ -4263,8 +4274,8 @@ class MonthList : Templates::List
   $rect <370,450,570,490>
   method void UpdateCalendarTime()
   {
-    Clock::CalendarTime.Month=Month;
-    Clock::CalendarTime.Year=Year;
+    Clock::CalendarTime.Month = Month;
+    Clock::CalendarTime.Year = Year;
   }
 
   // List Management
